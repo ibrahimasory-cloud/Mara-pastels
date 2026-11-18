@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "",
+  "buildCommand": "mkdir -p dist && cp index.html styles.css content.js script.js site-data.js supabase-config.js dist/ && cp -R admin assets dist/",
+  "outputDirectory": "dist",
+  "trailingSlash": true,
+  "rewrites": [
+    { "source": "/admin/", "destination": "/admin/index.html" }
+  ]
+}
