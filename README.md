@@ -1,1 +1,27 @@
-# Mara-pastels
+# Mara Pastel
+
+La vitrine se trouve à la racine et l’administration à `/admin`. Aucune dépendance à installer. Pour ouvrir les deux pages en local avec Python déjà disponible, lancer `python3 -m http.server 3000` depuis le dépôt. Le serveur livre `admin/index.html` à l’adresse `/admin/`. En production, servir le site statique en HTTPS avec la résolution des index de dossiers. La vitrine conserve son contenu d’origine tant que Supabase est indisponible ou vide.
+
+## Activer l’administration
+
+1. Dans le SQL Editor du projet Supabase, exécuter une fois la migration [202611180001_mara_admin.sql](supabase/migrations/202611180001_mara_admin.sql). Elle initialise le contenu publié et limite les droits de publication, d’import des photos et de lecture des messages aux administrateurs.
+2. Créer le compte du gestionnaire dans **Authentication → Users**. Copier son identifiant UUID, puis exécuter `insert into public.mara_admins (user_id) values ('UUID_DU_COMPTE');` dans le SQL Editor. La connexion utilise son adresse e-mail et son mot de passe. Un compte Supabase non autorisé est refusé. Désactiver l’inscription publique si le projet est dédié à cette vitrine.
+3. Renseigner dans [supabase-config.js](supabase-config.js) l’URL du projet (`https://<ref>.supabase.co`) et sa clé **publishable** (ou l’ancienne clé **anon**). Les identifiants du gestionnaire et les clés privées restent hors des fichiers publics.
+4. Ouvrir `/admin` et se connecter. Modifier l’accueil, les fiches des pastels ou la section « Notre histoire ». Pour la galerie, ajouter un événement, saisir son nom et importer une ou plusieurs photos. Le bouton **Publier sur la vitrine** applique les modifications ensemble. Un titre ou texte vide rétablit le texte d’origine. Les photos peuvent être retirées de la vitrine. Les fichiers chargés dans le bucket public restent accessibles par leur URL tant qu’ils ne sont pas supprimés du stockage.
+
+## Modifier le mot de passe administrateur
+
+Après connexion, ouvrir **Paramètres du compte** en bas de `/admin`. Saisir l’ancien mot de passe, le nouveau et sa confirmation. L’administration vérifie d’abord l’ancien mot de passe auprès de Supabase Auth, puis utilise la session ainsi vérifiée pour enregistrer le nouveau.
+
+Dans les réglages **Authentication → Sign In / Providers → Email** du projet Supabase, activer **Require current password when changing password** pour que Supabase exige aussi l’ancien mot de passe lorsque son API est appelée directement. [Documentation Supabase](https://supabase.com/docs/guides/auth/password-security#require-current-password-when-changing-password)
+
+## Activer la réception des messages WhatsApp
+
+Le numéro indiqué dans [content.js](content.js) doit être rattaché à **WhatsApp Business Platform Cloud API** et au compte Meta qui envoie les notifications. Le numéro de la vitrine est utilisé pour la redirection WhatsApp, tandis que Meta fournit un **Phone Number ID** distinct.
+
+1. Déployer la fonction Edge `whatsapp-webhook` du dossier [supabase/functions](supabase/functions). Avec un CLI Supabase déjà lié au projet, utiliser `supabase functions deploy whatsapp-webhook --no-verify-jwt`. Si le déploiement se fait dans le Dashboard, utiliser le code de la fonction et désactiver la vérification JWT de la passerelle pour cet endpoint. Le webhook vérifie la signature HMAC de Meta sur le corps brut de chaque notification.
+2. Dans les secrets de la fonction Edge, définir `META_APP_SECRET` (secret de l’application Meta), `WHATSAPP_PHONE_NUMBER_ID` (identifiant du numéro) et `WHATSAPP_VERIFY_TOKEN` (chaîne aléatoire à saisir aussi dans la configuration Meta). La fonction utilise `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY` fournis côté serveur par Supabase.
+3. Dans le tableau de bord Meta, configurer l’URL de rappel `https://<ref>.supabase.co/functions/v1/whatsapp-webhook` avec le jeton de vérification, s’abonner au champ `messages` et vérifier que l’application est abonnée au compte WhatsApp Business du numéro.
+4. Depuis la vitrine, préparer puis **envoyer** un message de test dans WhatsApp. Sur `/admin`, actualiser la boîte de réception. Le message doit s’afficher une seule fois, même si Meta répète la notification.
+
+La vitrine ajoute la ligne « Source : site Mara Pastel » aux messages préparés. Le webhook conserve les messages texte entrants du bon numéro qui contiennent cette ligne. Les messages non envoyés, l’historique et les messages dont la ligne a été supprimée avant l’envoi ne peuvent pas être attribués au site. La boîte de réception contient des données client accessibles aux administrateurs autorisés uniquement.
