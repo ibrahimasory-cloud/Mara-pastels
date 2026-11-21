@@ -2,7 +2,7 @@
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101012;--surface:#16161a;--card:#1c1c21;--ink:#f4f4f5;--muted:#a1a1aa;--line:#2b2b31;--dark:#0b0b0d}}
 :root[data-theme="dark"]{--bg:#101012;--surface:#16161a;--card:#1c1c21;--ink:#f4f4f5;--muted:#a1a1aa;--line:#2b2b31;--dark:#0b0b0d}
-html{scroll-padding-top:env(safe-area-inset-top,0px);color-scheme:light dark}@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}[hidden]{display:none!important}
+html{scroll-padding-top:env(safe-area-inset-top,0px);color-scheme:light dark}[hidden]{display:none!important}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.65 "Plus Jakarta Sans",system-ui,sans-serif}
 h1,h2,h3{margin:0;line-height:1.12;font-weight:800;letter-spacing:-.02em}
@@ -97,95 +97,81 @@ footer .cols{grid-template-columns:1.4fr 1fr 1.2fr}
 .shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
 @media (prefers-reduced-motion: no-preference) {
+  html:not(:has(.storefront)),
+  html:has(.storefront.motion-scrolling) { scroll-behavior: smooth; }
   .storefront { --motion-out: cubic-bezier(.16, 1, .3, 1); }
 
-  #accueil .bg {
-    animation: hero-photo-in 1550ms cubic-bezier(.2, .7, .3, 1) backwards;
-    transform-origin: 65% 35%;
+  .motion-scrolling .motion-pending { opacity: 0; }
+  .motion-scrolling main .motion-enter {
+    animation: section-arrive 1160ms cubic-bezier(.19, .75, .28, 1) var(--stagger, 0ms) backwards;
   }
-  #accueil .hero-body h1 {
-    animation: hero-title-in 960ms var(--motion-out) 80ms backwards;
+  .motion-scrolling main .head.motion-enter {
+    animation-name: heading-arrive;
   }
-  #accueil .lead,
-  #accueil .actions > *,
-  #accueil .facts > li {
-    animation: content-arrive 740ms var(--motion-out) var(--intro-delay) backwards;
+  .motion-scrolling .about figure.motion-enter {
+    animation-name: story-image-arrive;
   }
-  #accueil .lead { --intro-delay: 235ms; }
-  #accueil .actions > :first-child { --intro-delay: 335ms; }
-  #accueil .actions > :nth-child(2) { --intro-delay: 425ms; }
-  #accueil .facts > :first-child { --intro-delay: 490ms; }
-  #accueil .facts > :nth-child(2) { --intro-delay: 565ms; }
-  #accueil .facts > :nth-child(3) { --intro-delay: 640ms; }
-
-  @keyframes hero-photo-in {
-    from { opacity: .16; transform: scale(1.11); }
+  @keyframes section-arrive {
+    from { opacity: 0; transform: translate(var(--enter-x, 0px), 58px) scale(.93); }
   }
-  @keyframes hero-title-in {
-    from { opacity: .18; clip-path: inset(0 0 78%); transform: translateY(25px); }
-    to { opacity: 1; clip-path: inset(-10% -4% -10%); transform: translateY(0); }
+  @keyframes heading-arrive {
+    from { opacity: .15; clip-path: inset(82% -4% 0); transform: translateY(40px); }
+    to { opacity: 1; clip-path: inset(-8% -4%); transform: translateY(0); }
+  }
+  @keyframes story-image-arrive {
+    from { opacity: .1; clip-path: inset(0 100% 0 0 round 20px); transform: scale(.95); }
+    to { clip-path: inset(0 round 20px); transform: scale(1); }
   }
   @keyframes content-arrive {
     from { opacity: 0; transform: translateY(18px); }
   }
-
-  main .motion-enter:not(#albums),
-  #albums.motion-enter > .album {
-    animation: section-arrive 720ms var(--motion-out) var(--stagger, 0ms) backwards;
-  }
-  @keyframes section-arrive {
-    from { opacity: .25; transform: translateY(22px) scale(.985); }
-  }
   @media (min-width: 640px) {
     main .grid > :nth-child(3n + 2),
-    .about > :nth-child(2) { --stagger: 90ms; }
-    main .grid > :nth-child(3n + 3) { --stagger: 180ms; }
+    .about > :nth-child(2) { --stagger: 150ms; }
+    main .grid > :nth-child(3n + 3) { --stagger: 300ms; }
+  }
+  @media (min-width: 900px) {
+    #pastels .grid > :first-child { --enter-x: -26px; }
+    #pastels .grid > :last-child { --enter-x: 26px; }
   }
 
-  .storefront :is(.btn, .qty button) {
+  .motion-scrolling :is(.btn, .qty button) {
     transition: translate 240ms var(--motion-out), filter 240ms ease, background-color 240ms ease;
   }
-  .storefront :is(.btn, .qty button):not(:disabled):active { translate: 0 2px; }
-  #formulaire .qty button:hover {
+  .motion-scrolling :is(.btn, .qty button):not(:disabled):active { translate: 0 2px; }
+  .motion-scrolling #formulaire .qty button:hover {
     background-color: var(--red);
     color: #fff;
     border-color: var(--red);
   }
 
-  #accueil .menu:not([hidden]) {
-    animation: menu-arrive 300ms var(--motion-out) backwards;
+  .motion-scrolling #accueil .menu:not([hidden]) {
+    animation: menu-arrive 380ms var(--motion-out) backwards;
     transform-origin: 50% 0;
   }
   @keyframes menu-arrive {
     from { opacity: 0; transform: translateY(-8px) scale(.97); }
   }
 
-  #pastels .shot > img:not([hidden]) {
-    animation: photo-settle 700ms var(--motion-out) backwards;
-  }
-  @keyframes photo-settle {
-    from { opacity: .32; transform: scale(1.08); }
-  }
-
   @media (hover: hover) and (pointer: fine) {
-    .storefront .btn:not(:disabled):hover { translate: 0 -2px; }
-    main :is(.grid > article.card, .album) {
-      transition: translate 420ms var(--motion-out), box-shadow 420ms var(--motion-out), border-color 320ms ease;
+    .motion-scrolling .btn:not(:disabled):hover { translate: 0 -2px; }
+    .motion-scrolling main :is(.grid > article.card, .album) {
+      transition: translate 520ms var(--motion-out), box-shadow 520ms var(--motion-out), border-color 400ms ease;
     }
-    main :is(.grid > article.card:hover, .album:hover, .album:focus-visible) {
+    .motion-scrolling main :is(.grid > article.card:hover, .album:hover, .album:focus-visible) {
       translate: 0 -6px;
       box-shadow: 0 18px 36px rgba(0, 0, 0, .16);
       border-color: color-mix(in srgb, var(--red) 35%, var(--line));
     }
-    main .grid .tile > .ic {
+    .motion-scrolling main .grid .tile > .ic {
       transition: transform 480ms var(--motion-out);
     }
-    main .grid > article:hover .tile > .ic { transform: rotate(-9deg) scale(1.13); }
-    #pastels .shot > img {
-      transition: scale 680ms var(--motion-out);
+    .motion-scrolling main .grid > article:hover .tile > .ic { transform: rotate(-9deg) scale(1.13); }
+    .motion-scrolling #pastels .shot > img {
+      transition: scale 860ms var(--motion-out);
     }
-    #pastels article:hover .shot > img { scale: 1.08; }
-    #pastels .shot:has(> img:not([hidden]))::after {
+    .motion-scrolling #pastels article:hover .shot > img { scale: 1.1; }
+    .motion-scrolling #pastels .shot:has(> img:not([hidden]))::after {
       position: absolute;
       inset: 0 auto 0 -50%;
       width: 48%;
@@ -193,34 +179,34 @@ footer .cols{grid-template-columns:1.4fr 1fr 1.2fr}
       pointer-events: none;
       background: linear-gradient(90deg, transparent, rgba(255, 244, 207, .24), transparent);
       transform: translateX(0) skewX(-20deg);
-      transition: transform 760ms var(--motion-out);
+      transition: transform 980ms var(--motion-out);
     }
-    #pastels article:hover .shot::after { transform: translateX(335%) skewX(-20deg); }
+    .motion-scrolling #pastels article:hover .shot::after { transform: translateX(335%) skewX(-20deg); }
   }
 
-  #faq details[open] > p {
-    animation: content-arrive 340ms var(--motion-out) backwards;
+  .motion-scrolling #faq details[open] > p {
+    animation: content-arrive 460ms var(--motion-out) backwards;
   }
-  #faq details[open] > summary::after {
-    animation: faq-icon-in 280ms var(--motion-out) backwards;
+  .motion-scrolling #faq details[open] > summary::after {
+    animation: faq-icon-in 360ms var(--motion-out) backwards;
   }
   @keyframes faq-icon-in {
     from { opacity: .55; transform: rotate(-45deg) scale(.78); }
   }
   @supports selector(details::details-content) and (interpolate-size: allow-keywords) {
-    #faq details { interpolate-size: allow-keywords; }
-    #faq details::details-content {
+    .motion-scrolling #faq details { interpolate-size: allow-keywords; }
+    .motion-scrolling #faq details::details-content {
       block-size: 0;
       overflow: clip;
-      transition: block-size 340ms var(--motion-out), content-visibility 340ms allow-discrete;
+      transition: block-size 460ms var(--motion-out), content-visibility 460ms allow-discrete;
     }
-    #faq details[open]::details-content { block-size: auto; }
+    .motion-scrolling #faq details[open]::details-content { block-size: auto; }
   }
 
-  #dlg[open] { animation: album-arrive 420ms var(--motion-out) backwards; }
-  #dlg[open]::backdrop { animation: backdrop-arrive 300ms ease-out backwards; }
-  #dlg[open] .pics img {
-    animation: content-arrive 460ms var(--motion-out) var(--photo-delay, 100ms) backwards;
+  .motion-scrolling #dlg[open] { animation: album-arrive 550ms var(--motion-out) backwards; }
+  .motion-scrolling #dlg[open]::backdrop { animation: backdrop-arrive 370ms ease-out backwards; }
+  .motion-scrolling #dlg[open] .pics img {
+    animation: content-arrive 570ms var(--motion-out) var(--photo-delay, 100ms) backwards;
   }
   #dlg .pics img:nth-child(3n + 2) { --photo-delay: 155ms; }
   #dlg .pics img:nth-child(3n + 3) { --photo-delay: 210ms; }
@@ -232,7 +218,7 @@ footer .cols{grid-template-columns:1.4fr 1fr 1.2fr}
   }
 
   @supports (animation-timeline: scroll()) {
-    .storefront::before {
+    .storefront.motion-scrolling::before {
       position: fixed;
       inset: 0 0 auto;
       z-index: 21;
@@ -244,19 +230,28 @@ footer .cols{grid-template-columns:1.4fr 1fr 1.2fr}
       animation: scroll-progress 1ms linear both;
       animation-timeline: scroll(root block);
     }
-    #accueil { view-timeline: --storefront-hero block; }
-    #accueil .bg {
-      animation: hero-photo-in 1550ms cubic-bezier(.2, .7, .3, 1) backwards, hero-depth 1ms linear both;
-      animation-timeline: auto, --storefront-hero;
-      animation-range: normal, exit 0% exit 100%;
+    .motion-scrolling #accueil { view-timeline: --storefront-hero block; }
+    .motion-scrolling #accueil .bg {
+      animation: hero-depth 1ms linear both;
+      animation-timeline: --storefront-hero;
+      animation-range: exit;
+      transform-origin: 65% 35%;
+    }
+    .motion-scrolling #accueil .hero-body {
+      animation: hero-copy-depth 1ms linear both;
+      animation-timeline: --storefront-hero;
+      animation-range: exit;
     }
     @keyframes scroll-progress {
       from { transform: scaleX(0); }
       to { transform: scaleX(1); }
     }
     @keyframes hero-depth {
-      from { translate: 0 0; }
-      to { translate: 0 12%; }
+      from { transform: none; }
+      to { transform: translateY(18%) scale(1.1); }
+    }
+    @keyframes hero-copy-depth {
+      to { transform: translateY(-30px); opacity: .65; }
     }
   }
 }

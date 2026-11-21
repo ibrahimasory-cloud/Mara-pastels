@@ -60,13 +60,14 @@ function updateOrder() {
   orderAmount.value = amount;
   quantityError.hidden = true;
 
-  if (amountChanged && motionPreference.matches && typeof orderAmount.animate === "function") {
+  if (amountChanged && document.body.classList.contains("motion-scrolling") &&
+    motionPreference.matches && typeof orderAmount.animate === "function") {
     amountAnimation?.cancel();
     amountAnimation = orderAmount.animate([
       { transform: "translateY(5px) scale(.96)", opacity: .7 },
       { transform: "translateY(-2px) scale(1.04)", offset: .62 },
       { transform: "none", opacity: 1 }
-    ], { duration: 340, easing: "cubic-bezier(.2, .75, .25, 1)" });
+    ], { duration: 420, easing: "cubic-bezier(.2, .75, .25, 1)" });
   }
 }
 
@@ -152,6 +153,7 @@ document.addEventListener("keydown", (event) => {
 const gallery = document.querySelector("#galerie");
 const albums = document.querySelector("#albums");
 const dialog = document.querySelector("#dlg");
+let queueAlbumReveal;
 function renderGallery(events) {
   albums.replaceChildren();
   gallery.hidden = events.length === 0;
@@ -187,6 +189,7 @@ function renderGallery(events) {
       dialog.showModal();
     });
     albums.append(album);
+    queueAlbumReveal?.(album);
   });
 }
 
@@ -248,21 +251,62 @@ showPublishedSite().catch(() => {
   // La vitrine conserve le contenu local si Supabase est indisponible.
 });
 
-if (motionPreference.matches && "IntersectionObserver" in window) {
-  const revealObserver = new IntersectionObserver((entries) => {
-    for (const { target, isIntersecting } of entries) {
-      if (!isIntersecting) continue;
-      target.classList.add("motion-enter");
-      revealObserver.unobserve(target);
-    }
-  }, { rootMargin: "0px 0px 52px 0px" });
+function prepareScrollMotion() {
+  if (!motionPreference.matches || !("IntersectionObserver" in window)) return;
+  const revealThreshold = .14;
 
-  // Reveals are optional: no content is hidden while it waits for the observer.
-  const revealTargets = document.querySelectorAll(
-    "main .head, main .grid > article, .about > *, .faq details, #albums, .cta"
-  );
-  revealTargets.forEach((target) => {
-    const { top, height } = target.getBoundingClientRect();
-    if (height === 0 || top >= window.innerHeight) revealObserver.observe(target);
+  function finishReveal(target) {
+    target.classList.remove("motion-pending", "motion-enter");
+    revealObserver.unobserve(target);
+  }
+
+  const revealObserver = new IntersectionObserver((entries) => {
+    for (const { target, isIntersecting, intersectionRatio } of entries) {
+      if (!target.isConnected) {
+        finishReveal(target);
+      } else if (isIntersecting && intersectionRatio >= revealThreshold) {
+        target.classList.replace("motion-pending", "motion-enter");
+        revealObserver.unobserve(target);
+      }
+    }
+  }, { threshold: revealThreshold });
+
+  function queueReveal(target) {
+    if (!motionPreference.matches) return;
+    const { top, bottom, height } = target.getBoundingClientRect();
+    const hasScrolled = document.body.classList.contains("motion-scrolling");
+    if (!hasScrolled && height > 0 && bottom > 0 && top < window.innerHeight) return;
+    target.classList.add("motion-pending");
+    if (hasScrolled) revealObserver.observe(target);
+  }
+
+  document.querySelectorAll(
+    "main .head, main .grid > :is(article, .album), .about > *, .faq details, .cta"
+  ).forEach(queueReveal);
+  queueAlbumReveal = queueReveal;
+
+  document.addEventListener("animationend", (event) => {
+    if (event.target.classList.contains("motion-enter")) finishReveal(event.target);
   });
+  document.addEventListener("focusin", (event) => {
+    const target = event.target.closest(".motion-pending, .motion-enter");
+    if (target) finishReveal(target);
+  });
+  motionPreference.addEventListener("change", (event) => {
+    if (event.matches) return;
+    document.querySelectorAll(".motion-pending, .motion-enter").forEach(finishReveal);
+  });
+
+  const initialScrollPosition = window.scrollY;
+  // Native anchor navigation can emit a scroll event for the position already shown at launch.
+  function startScrollMotion() {
+    if (window.scrollY === initialScrollPosition) return;
+    window.removeEventListener("scroll", startScrollMotion);
+    document.body.classList.add("motion-scrolling");
+    document.querySelectorAll(".motion-pending").forEach((target) => revealObserver.observe(target));
+  }
+  window.addEventListener("scroll", startScrollMotion, { passive: true });
 }
+
+if (document.readyState === "complete") prepareScrollMotion();
+else window.addEventListener("pageshow", prepareScrollMotion, { once: true });
