@@ -71,7 +71,7 @@ function updateOrder() {
   }
 }
 
-motionPreference.addEventListener("change", (event) => {
+motionPreference.addEventListener?.("change", (event) => {
   if (!event.matches) amountAnimation?.cancel();
 });
 
@@ -252,32 +252,50 @@ showPublishedSite().catch(() => {
 });
 
 function prepareScrollMotion() {
-  if (!motionPreference.matches || !("IntersectionObserver" in window)) return;
-  const revealThreshold = .14;
+  if (!motionPreference.matches) return;
+  const pending = new Set();
+  let previousScroll = window.scrollY;
+  let frame = null;
 
   function finishReveal(target) {
+    pending.delete(target);
     target.classList.remove("motion-pending", "motion-enter");
-    revealObserver.unobserve(target);
   }
 
-  const revealObserver = new IntersectionObserver((entries) => {
-    for (const { target, isIntersecting, intersectionRatio } of entries) {
+  function revealInView() {
+    frame = null;
+    const viewportHeight = window.innerHeight;
+    const atEnd = window.scrollY + viewportHeight >= document.documentElement.scrollHeight - 2;
+    const entryLine = atEnd ? viewportHeight : viewportHeight * .78;
+    const visible = [];
+    for (const target of pending) {
       if (!target.isConnected) {
-        finishReveal(target);
-      } else if (isIntersecting && intersectionRatio >= revealThreshold) {
-        target.classList.replace("motion-pending", "motion-enter");
-        revealObserver.unobserve(target);
+        pending.delete(target);
+        continue;
       }
+      const bounds = target.getBoundingClientRect();
+      if (bounds.height > 0 && bounds.top < entryLine && bounds.bottom > 0) visible.push(target);
     }
-  }, { threshold: revealThreshold });
+    for (const target of visible) {
+      pending.delete(target);
+      target.classList.replace("motion-pending", "motion-enter");
+    }
+  }
+
+  function scheduleReveal() {
+    if (frame === null && pending.size && document.body.classList.contains("motion-scrolling")) {
+      frame = window.requestAnimationFrame(revealInView);
+    }
+  }
 
   function queueReveal(target) {
     if (!motionPreference.matches) return;
     const { top, bottom, height } = target.getBoundingClientRect();
     const hasScrolled = document.body.classList.contains("motion-scrolling");
     if (!hasScrolled && height > 0 && bottom > 0 && top < window.innerHeight) return;
+    pending.add(target);
     target.classList.add("motion-pending");
-    if (hasScrolled) revealObserver.observe(target);
+    scheduleReveal();
   }
 
   document.querySelectorAll(
@@ -292,20 +310,19 @@ function prepareScrollMotion() {
     const target = event.target.closest(".motion-pending, .motion-enter");
     if (target) finishReveal(target);
   });
-  motionPreference.addEventListener("change", (event) => {
+  motionPreference.addEventListener?.("change", (event) => {
     if (event.matches) return;
     document.querySelectorAll(".motion-pending, .motion-enter").forEach(finishReveal);
   });
 
-  const initialScrollPosition = window.scrollY;
   // Native anchor navigation can emit a scroll event for the position already shown at launch.
-  function startScrollMotion() {
-    if (window.scrollY === initialScrollPosition) return;
-    window.removeEventListener("scroll", startScrollMotion);
+  window.addEventListener("scroll", () => {
+    if (window.scrollY === previousScroll || !motionPreference.matches) return;
+    previousScroll = window.scrollY;
     document.body.classList.add("motion-scrolling");
-    document.querySelectorAll(".motion-pending").forEach((target) => revealObserver.observe(target));
-  }
-  window.addEventListener("scroll", startScrollMotion, { passive: true });
+    scheduleReveal();
+  }, { passive: true });
+  window.addEventListener("resize", scheduleReveal);
 }
 
 if (document.readyState === "complete") prepareScrollMotion();

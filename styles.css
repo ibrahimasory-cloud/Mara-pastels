@@ -103,7 +103,7 @@ footer .cols{grid-template-columns:1.4fr 1fr 1.2fr}
 
   .motion-scrolling .motion-pending { opacity: 0; }
   .motion-scrolling main .motion-enter {
-    animation: section-arrive 1160ms cubic-bezier(.19, .75, .28, 1) var(--stagger, 0ms) backwards;
+    animation: section-arrive 1250ms cubic-bezier(.25, .12, .3, 1) var(--stagger, 0ms) backwards;
   }
   .motion-scrolling main .head.motion-enter {
     animation-name: heading-arrive;
@@ -112,10 +112,14 @@ footer .cols{grid-template-columns:1.4fr 1fr 1.2fr}
     animation-name: story-image-arrive;
   }
   @keyframes section-arrive {
-    from { opacity: 0; transform: translate(var(--enter-x, 0px), 58px) scale(.93); }
+    from { opacity: 0; transform: translate(var(--enter-x, 0px), 90px) scale(.9); }
+    34% { opacity: .5; transform: translateY(52px) scale(.95); }
+    78% { opacity: 1; transform: translateY(-4px) scale(1.012); }
+    to { opacity: 1; transform: none; }
   }
   @keyframes heading-arrive {
-    from { opacity: .15; clip-path: inset(82% -4% 0); transform: translateY(40px); }
+    from { opacity: .15; clip-path: inset(88% -4% 0); transform: translateY(52px); }
+    38% { opacity: .8; clip-path: inset(40% -4% 0); transform: translateY(22px); }
     to { opacity: 1; clip-path: inset(-8% -4%); transform: translateY(0); }
   }
   @keyframes story-image-arrive {
