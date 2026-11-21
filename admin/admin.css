@@ -628,8 +628,12 @@
 .event-photos li .btn { margin-top: 6px;font-size: .82rem; }
 .admin-checkbox { display:flex;align-items:center;gap:9px;margin-top:13px;font-weight:650; }
 .admin-checkbox input { width:1.1rem;height:1.1rem;accent-color:var(--red); }
-#password-dialog { width:min(460px,94vw);padding:clamp(16px,5vw,26px); }
-.password-actions { display:flex;flex-wrap:wrap;gap:10px;margin-top:20px; }
+.account-dialog { width:min(460px,94vw);padding:clamp(16px,5vw,26px); }
+.account-actions { display:flex;flex-wrap:wrap;gap:10px;margin-top:20px; }
+.account-mfa { border-top:1px solid var(--line);margin-top:24px;padding-top:16px; }
+.account-mfa h3 { margin:0; }
+#mfa-qr { display:block;background:white;padding:8px;margin-block:12px; }
+#mfa-secret { overflow-wrap:anywhere; }
 
 .admin-publish {
   position: sticky;

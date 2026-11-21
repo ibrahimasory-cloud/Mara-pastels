@@ -68,6 +68,8 @@ async function maraRequest(path, { method = "GET", token, body, type, headers } 
       ...headers
     },
     ...(body !== undefined && { body: type ? body : JSON.stringify(body) }),
+    credentials: "omit",
+    redirect: "error",
     cache: "no-store",
     signal: AbortSignal.timeout(20000)
   });
@@ -112,7 +114,8 @@ function maraSiteSettings(values = {}) {
 function maraSocialUrl(address, domain) {
   try {
     const url = new URL(address);
-    return url.protocol === "https:" && [domain, `www.${domain}`].includes(url.hostname) ? url.href : null;
+    return url.protocol === "https:" && !url.port && !url.username && !url.password &&
+      [domain, `www.${domain}`].includes(url.hostname) ? url.href : null;
   } catch {
     return null;
   }

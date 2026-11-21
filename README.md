@@ -11,9 +11,17 @@ La vitrine se trouve à la racine et l’administration à `/admin`. Aucune dép
 
 ## Modifier le mot de passe administrateur
 
-Après connexion, ouvrir **Paramètres du compte** en bas de `/admin`. Saisir l’ancien mot de passe, le nouveau et sa confirmation. L’administration vérifie d’abord l’ancien mot de passe auprès de Supabase Auth, puis utilise la session ainsi vérifiée pour enregistrer le nouveau.
+Après connexion, ouvrir **Paramètres du compte** en bas de `/admin`. Saisir l’ancien mot de passe, le nouveau et sa confirmation. L’administration vérifie d’abord l’ancien mot de passe auprès de Supabase Auth. Elle conserve la session validée par code si la double authentification est active.
 
 Dans les réglages **Authentication → Sign In / Providers → Email** du projet Supabase, activer **Require current password when changing password** pour que Supabase exige aussi l’ancien mot de passe lorsque son API est appelée directement. [Documentation Supabase](https://supabase.com/docs/guides/auth/password-security#require-current-password-when-changing-password)
+
+## Renforcer les accès administrateur
+
+1. Déployer cette version du site. Vercel applique les en-têtes de sécurité définis dans [vercel.json](vercel.json). Si le site change de projet Supabase, modifier aussi l’origine Supabase autorisée dans la politique de sécurité des contenus de ce fichier.
+2. Dans le SQL Editor Supabase, exécuter [202611210003_mara_admin_security.sql](supabase/migrations/202611210003_mara_admin_security.sql), après les migrations précédentes. Supabase exige alors une session active pour les opérations d’administration et une session vérifiée par code pour les comptes ayant activé le TOTP.
+3. Dans **Paramètres du compte → Configurer le code de connexion**, confirmer le mot de passe, scanner le QR code avec une application d’authentification et saisir le code affiché. Garder un accès de secours à l’application. Si la configuration échoue, vérifier que l’inscription et la vérification TOTP sont activées dans Supabase Auth. [Documentation Supabase](https://supabase.com/docs/guides/auth/auth-mfa/totp)
+
+L’administration se verrouille après 20 minutes d’inactivité. Les brouillons du site restent disponibles dans le même navigateur à la prochaine connexion.
 
 ## Enregistrer et exporter les demandes
 

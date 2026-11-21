@@ -1,16 +1,48 @@
 const encoder = new TextEncoder();
 const siteMarker = "Source : site Mara Pastel";
 const maxBodyBytes = 1024 * 1024;
-const text = (body, status = 200) => new Response(body, { status });
+const text = (body, status = 200) => new Response(body, {
+  status,
+  headers: {
+    "Content-Type": "text/plain; charset=utf-8",
+    "Cache-Control": "no-store",
+    "X-Content-Type-Options": "nosniff"
+  }
+});
 
-async function validSignature(bytes, header, appSecret) {
-  const hex = /^sha256=([a-f0-9]{64})$/i.exec(header || "")?.[1];
-  if (!hex) return false;
+async function validSignature(bytes, hex, appSecret) {
   const signature = Uint8Array.from(hex.match(/../g), (pair) => parseInt(pair, 16));
   const key = await crypto.subtle.importKey(
     "raw", encoder.encode(appSecret), { name: "HMAC", hash: "SHA-256" }, false, ["verify"]
   );
   return crypto.subtle.verify("HMAC", key, signature, bytes);
+}
+
+async function readBody(stream) {
+  if (!stream) return new Uint8Array();
+  const reader = stream.getReader();
+  let buffer = new Uint8Array(8192);
+  let length = 0;
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) return buffer.subarray(0, length);
+      const required = length + value.byteLength;
+      if (required > maxBodyBytes) {
+        void reader.cancel().catch(() => {});
+        return null;
+      }
+      if (required > buffer.length) {
+        const grown = new Uint8Array(Math.min(maxBodyBytes, Math.max(required, buffer.length * 2)));
+        grown.set(buffer);
+        buffer = grown;
+      }
+      buffer.set(value, length);
+      length = required;
+    }
+  } finally {
+    reader.releaseLock();
+  }
 }
 
 function incomingSiteMessages(payload, phoneId) {
@@ -58,9 +90,16 @@ Deno.serve(async (request) => {
   if (!appSecret || !phoneId || !project || !serviceRole) return text("Webhook not configured", 503);
 
   if (Number(request.headers.get("content-length")) > maxBodyBytes) return text("Payload too large", 413);
-  const bytes = await request.arrayBuffer();
-  if (bytes.byteLength > maxBodyBytes) return text("Payload too large", 413);
-  if (!await validSignature(bytes, request.headers.get("x-hub-signature-256"), appSecret)) {
+  const hex = /^sha256=([a-f0-9]{64})$/i.exec(request.headers.get("x-hub-signature-256") || "")?.[1];
+  if (!hex) return text("Forbidden", 403);
+  let bytes;
+  try {
+    bytes = await readBody(request.body);
+  } catch {
+    return text("Invalid payload", 400);
+  }
+  if (!bytes) return text("Payload too large", 413);
+  if (!await validSignature(bytes, hex, appSecret)) {
     return text("Forbidden", 403);
   }
 
@@ -82,6 +121,7 @@ Deno.serve(async (request) => {
         Prefer: "resolution=ignore-duplicates,return=minimal"
       },
       body: JSON.stringify(records),
+      redirect: "error",
       signal: AbortSignal.timeout(8000)
     });
     return result.ok ? text("OK") : text("Storage unavailable", 502);

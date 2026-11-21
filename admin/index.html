@@ -9,11 +9,11 @@
   <title>Administration – Mara Pastel</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="../styles.css?v=4">
-  <link rel="stylesheet" href="admin.css?v=5">
+  <link rel="stylesheet" href="admin.css?v=6">
   <script src="../content.js?v=5" defer></script>
   <script src="../supabase-config.js" defer></script>
-  <script src="../site-data.js?v=5" defer></script>
-  <script src="admin.js?v=5" defer></script>
+  <script src="../site-data.js?v=6" defer></script>
+  <script src="admin.js?v=6" defer></script>
   <script src="orders.js?v=2" defer></script>
   <script src="dashboard.js" defer></script>
 </head>
@@ -35,6 +35,18 @@
         </label>
         <button class="btn" type="submit" disabled>Se connecter</button>
         <p id="login-status" class="admin-status" role="status"></p>
+      </form>
+      <form class="admin-login" id="mfa-login-form" method="post" hidden>
+        <h1>Vérifier la connexion</h1>
+        <p>Saisissez le code à six chiffres de votre application d’authentification.</p>
+        <label class="fld">Code de vérification
+          <input name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+        </label>
+        <div class="account-actions">
+          <button class="btn" type="submit">Vérifier</button>
+          <button class="btn admin-secondary" id="mfa-login-cancel" type="button">Revenir à la connexion</button>
+        </div>
+        <p id="mfa-login-status" class="admin-status" role="status"></p>
       </form>
       <a class="admin-login-home" href="../">Retour à la vitrine</a>
     </div>
@@ -175,7 +187,7 @@
       </div>
     </main>
 
-    <dialog id="password-dialog" aria-labelledby="password-title">
+    <dialog class="account-dialog" id="password-dialog" aria-labelledby="password-title">
       <form id="password-form" method="post">
         <h2 id="password-title">Modifier le mot de passe</h2>
         <label class="fld">Ancien mot de passe
@@ -188,11 +200,38 @@
           <input name="confirmPassword" type="password" autocomplete="new-password" required>
         </label>
         <p id="password-status" class="admin-status" role="status"></p>
-        <div class="password-actions">
+        <div class="account-actions">
           <button class="btn" id="save-password" type="submit">Modifier le mot de passe</button>
           <button class="btn admin-secondary" id="close-password" type="button">Fermer</button>
         </div>
       </form>
+      <div class="account-mfa">
+        <h3>Double authentification</h3>
+        <p id="mfa-state"></p>
+        <button class="btn admin-secondary" id="mfa-setup" type="button" hidden>Configurer le code de connexion</button>
+      </div>
+    </dialog>
+
+    <dialog class="account-dialog" id="mfa-dialog" aria-labelledby="mfa-title">
+      <h2 id="mfa-title">Activer la double authentification</h2>
+      <form id="mfa-enroll-form" method="post">
+        <p>Confirmez votre mot de passe pour configurer une application d’authentification.</p>
+        <label class="fld">Mot de passe du compte
+          <input name="password" type="password" autocomplete="current-password" required autofocus>
+        </label>
+        <div class="account-actions"><button class="btn" type="submit">Continuer</button></div>
+      </form>
+      <form id="mfa-confirm-form" method="post" hidden>
+        <p>Scannez le QR code dans votre application d’authentification ou saisissez la clé manuellement. Conservez un accès de secours à votre application.</p>
+        <img id="mfa-qr" alt="QR code de configuration de l’application d’authentification" width="168" height="168">
+        <p>Clé de configuration <code id="mfa-secret"></code></p>
+        <label class="fld">Code à six chiffres
+          <input name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+        </label>
+        <div class="account-actions"><button class="btn" type="submit">Activer</button></div>
+      </form>
+      <p id="mfa-setup-status" class="admin-status" role="status"></p>
+      <button class="btn admin-secondary" id="mfa-close" type="button">Fermer</button>
     </dialog>
   </div>
   <section id="orders-print" aria-label="Export des demandes" hidden></section>

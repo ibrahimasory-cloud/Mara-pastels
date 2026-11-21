@@ -3,6 +3,9 @@
 const loginForm = document.querySelector("#login-form");
 const loginPanel = document.querySelector("#login-panel");
 const loginStatus = document.querySelector("#login-status");
+const mfaLoginForm = document.querySelector("#mfa-login-form");
+const mfaLoginStatus = document.querySelector("#mfa-login-status");
+const mfaLoginCancel = document.querySelector("#mfa-login-cancel");
 const dashboard = document.querySelector("#dashboard");
 const adminTitle = document.querySelector("#admin-title");
 const adminViews = [...document.querySelectorAll("[data-admin-view]")];
@@ -15,6 +18,15 @@ const passwordForm = document.querySelector("#password-form");
 const passwordStatus = document.querySelector("#password-status");
 const savePassword = document.querySelector("#save-password");
 const closePassword = document.querySelector("#close-password");
+const mfaState = document.querySelector("#mfa-state");
+const mfaSetup = document.querySelector("#mfa-setup");
+const mfaDialog = document.querySelector("#mfa-dialog");
+const mfaEnrollForm = document.querySelector("#mfa-enroll-form");
+const mfaConfirmForm = document.querySelector("#mfa-confirm-form");
+const mfaSetupStatus = document.querySelector("#mfa-setup-status");
+const mfaClose = document.querySelector("#mfa-close");
+const mfaQr = document.querySelector("#mfa-qr");
+const mfaSecret = document.querySelector("#mfa-secret");
 const editors = document.querySelector("#editors");
 const eventEditors = document.querySelector("#event-editors");
 const siteSettings = document.querySelector("#site-settings");
@@ -26,8 +38,12 @@ const inboxStatus = document.querySelector("#inbox-status");
 const refreshInbox = document.querySelector("#refresh-inbox");
 const moreMessages = document.querySelector("#more-messages");
 const inboxDate = new Intl.DateTimeFormat("fr-GN", { dateStyle: "medium", timeStyle: "short", timeZone: "Africa/Conakry" });
+const adminIdleLimit = 20 * 60 * 1000;
 
 let session;
+let mfaEnrollment;
+let lastAdminActivity;
+let adminIdleTimer;
 let draft;
 let revision;
 let dirty = false;
@@ -123,10 +139,30 @@ function signInWithPassword(email, password) {
 }
 
 function revokeSession(token) {
+  if (!token) return;
   return maraRequest("/auth/v1/logout?scope=local", { method: "POST", token }).catch(() => {});
 }
 
+function checkAdminActivity(event) {
+  clearTimeout(adminIdleTimer);
+  if (!session || lastAdminActivity === undefined) return;
+  const now = Date.now();
+  if (now - lastAdminActivity >= adminIdleLimit) {
+    void revokeSession(disconnect("Session verrouillée après 20 minutes d’inactivité. Reconnectez-vous."));
+    return;
+  }
+  if (event?.isTrusted && !["visibilitychange", "pageshow"].includes(event.type)) lastAdminActivity = now;
+  adminIdleTimer = setTimeout(checkAdminActivity, adminIdleLimit - (now - lastAdminActivity));
+}
+
+for (const type of ["pointerdown", "keydown", "wheel", "touchmove"]) {
+  document.addEventListener(type, checkAdminActivity, { capture: true, passive: true });
+}
+document.addEventListener("visibilitychange", checkAdminActivity);
+window.addEventListener("pageshow", checkAdminActivity);
+
 async function adminRequest(path, options = {}) {
+  checkAdminActivity();
   const current = session;
   if (!current) throw new Error("Session terminée.");
   if (current.expires - Date.now() < 30000) {
@@ -137,18 +173,30 @@ async function adminRequest(path, options = {}) {
     await current.refreshing;
   }
   if (session !== current) throw new Error("Session terminée.");
-  return maraRequest(path, { ...options, token: current.token });
+  try {
+    return await maraRequest(path, { ...options, token: current.token });
+  } finally {
+    if (session !== current) throw new Error("Session terminée.");
+  }
 }
 
 function disconnect(message) {
   const token = session?.token;
+  clearTimeout(adminIdleTimer);
+  lastAdminActivity = undefined;
   session = undefined;
   if (passwordDialog.open) passwordDialog.close();
+  if (mfaDialog.open) mfaDialog.close();
+  resetMfaEnrollment();
   draft = undefined;
   dirty = false;
   dashboard.hidden = true;
   logoutButton.hidden = true;
   loginPanel.hidden = false;
+  loginForm.hidden = false;
+  mfaLoginForm.hidden = true;
+  mfaLoginForm.reset();
+  status(mfaLoginStatus, "");
   inboxList.replaceChildren();
   editors.replaceChildren();
   eventEditors.replaceChildren();
@@ -167,6 +215,50 @@ function sessionError(error) {
   return false;
 }
 
+function verifiedTotp(auth) {
+  return auth.user?.factors?.find((factor) => factor.factor_type === "totp" && factor.status === "verified");
+}
+
+async function verifyTotp(request, factorId, code) {
+  const path = `/auth/v1/factors/${encodeURIComponent(factorId)}`;
+  const challenge = await request(`${path}/challenge`, { method: "POST", body: {} });
+  return request(`${path}/verify`, { method: "POST", body: { challenge_id: challenge.id, code } });
+}
+
+function mfaError(error) {
+  if (error.status === 429) return "Trop de tentatives. Réessayez dans quelques instants.";
+  if (error.code === "mfa_verification_failed") return "Code incorrect. Saisissez le dernier code affiché par votre application.";
+  return "Vérification impossible. Réessayez avec un nouveau code.";
+}
+
+async function openAdministration() {
+  const allowed = await adminRequest("/rest/v1/rpc/is_mara_admin", { method: "POST", body: {} });
+  if (allowed !== true) {
+    await revokeSession(disconnect("Ce compte n’a pas accès à l’administration."));
+    return;
+  }
+  const [site] = await adminRequest(`${maraSitePath}&select=content,revision`);
+  if (!site) throw new Error("Configuration absente.");
+  revision = site.revision;
+  const local = storedDraft();
+  draft = { texts: {}, images: {}, events: [], ...site.content, ...local };
+  draft.settings = { ...maraSiteSettings(site.content.settings), ...local?.settings };
+  dirty = Boolean(local);
+  renderEditors();
+  renderEvents();
+  renderSettings();
+  status(publishStatus, dirty ? "Brouillon précédent restauré." : "");
+  updatePublishButton();
+  loginPanel.hidden = true;
+  mfaLoginForm.hidden = true;
+  dashboard.hidden = false;
+  logoutButton.hidden = false;
+  lastAdminActivity = Date.now();
+  checkAdminActivity();
+  showAdminView();
+  await Promise.all([loadInbox(), loadOrders(), loadDashboard()]);
+}
+
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const submit = loginForm.querySelector("button");
@@ -177,35 +269,62 @@ loginForm.addEventListener("submit", async (event) => {
     const values = new FormData(loginForm);
     const auth = await signInWithPassword(values.get("email").trim(), values.get("password"));
     session = applySession(auth);
-    const allowed = await adminRequest("/rest/v1/rpc/is_mara_admin", { method: "POST", body: {} });
-    if (allowed !== true) {
-      const token = disconnect("Ce compte n’a pas accès à l’administration.");
-      await revokeSession(token);
+    const factor = verifiedTotp(auth);
+    if (factor) {
+      session.mfaFactor = factor.id;
+      loginForm.hidden = true;
+      status(loginStatus, "");
+      mfaLoginForm.hidden = false;
+      mfaLoginForm.elements.code.focus();
       return;
     }
-    const [site] = await adminRequest(`${maraSitePath}&select=content,revision`);
-    if (!site) throw new Error("Configuration absente.");
-    revision = site.revision;
-    const local = storedDraft();
-    draft = { texts: {}, images: {}, events: [], ...site.content, ...local };
-    draft.settings = { ...maraSiteSettings(site.content.settings), ...local?.settings };
-    dirty = Boolean(local);
-    renderEditors();
-    renderEvents();
-    renderSettings();
-    status(publishStatus, dirty ? "Brouillon précédent restauré." : "");
-    updatePublishButton();
-    loginPanel.hidden = true;
-    dashboard.hidden = false;
-    logoutButton.hidden = false;
-    showAdminView();
-    await Promise.all([loadInbox(), loadOrders(), loadDashboard()]);
+    await openAdministration();
   } catch (error) {
-    disconnect(error.status === 400 || error.status === 401
+    void revokeSession(disconnect(error.status === 400 || error.status === 401
       ? "Adresse e-mail ou mot de passe incorrect."
-      : "Connexion ou chargement impossible. Vérifiez la configuration Supabase et réessayez.");
+      : error.status === 429 ? "Trop de tentatives. Réessayez dans quelques instants."
+        : "Connexion ou chargement impossible. Réessayez dans quelques instants."));
   } finally {
     loginForm.elements.password.value = "";
+    submit.disabled = false;
+  }
+});
+
+mfaLoginCancel.addEventListener("click", () => {
+  void revokeSession(disconnect("Connexion annulée."));
+  loginForm.elements.password.focus();
+});
+
+mfaLoginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const current = session;
+  const submit = mfaLoginForm.querySelector("button[type=submit]");
+  if (!current?.mfaFactor || submit.disabled) return;
+  submit.disabled = true;
+  status(mfaLoginStatus, "Vérification du code…");
+  try {
+    const request = (path, options) => {
+      if (session !== current) throw new Error("Connexion annulée.");
+      return maraRequest(path, { ...options, token: current.token });
+    };
+    const auth = await verifyTotp(request, current.mfaFactor, mfaLoginForm.elements.code.value);
+    if (session !== current) {
+      void revokeSession(auth.access_token);
+      return;
+    }
+    applySession(auth, current);
+    current.mfaVerified = true;
+    await openAdministration();
+  } catch (error) {
+    if (session !== current) return;
+    if (error.status === 401 || current.mfaVerified) {
+      void revokeSession(disconnect("Connexion expirée ou indisponible. Réessayez."));
+    } else {
+      status(mfaLoginStatus, mfaError(error), true);
+      mfaLoginForm.elements.code.focus();
+    }
+  } finally {
+    mfaLoginForm.reset();
     submit.disabled = false;
   }
 });
@@ -238,8 +357,17 @@ logoutButton.addEventListener("click", async () => {
 });
 
 accountSettings.addEventListener("click", () => {
-  if (session) passwordDialog.showModal();
+  if (session) showAccountSettings();
 });
+
+function showAccountSettings(message) {
+  status(mfaState, message || (session.mfaVerified
+    ? "Activée. Un code est demandé à chaque connexion."
+    : "Ajoutez un code à six chiffres en plus du mot de passe."));
+  mfaSetup.hidden = Boolean(session.mfaVerified);
+  passwordDialog.showModal();
+}
+
 closePassword.addEventListener("click", () => passwordDialog.close());
 passwordDialog.addEventListener("cancel", (event) => {
   if (changingPassword) event.preventDefault();
@@ -289,14 +417,16 @@ passwordForm.addEventListener("submit", async (event) => {
       return;
     }
 
-    // Supabase conserve la session utilisée pour le changement et révoque les autres.
-    session = applySession(auth);
-    void revokeSession(current.token);
-    await maraRequest("/auth/v1/user", {
-      method: "PUT",
-      token: session.token,
-      body: { current_password: oldPassword, password: newPassword }
-    });
+    const update = { method: "PUT", body: { current_password: oldPassword, password: newPassword } };
+    if (current.mfaVerified) {
+      void revokeSession(auth.access_token);
+      await adminRequest("/auth/v1/user", update);
+    } else {
+      // Use the fresh login so Supabase retains it when rotating other sessions.
+      void revokeSession(current.token);
+      applySession(auth, current);
+      await maraRequest("/auth/v1/user", { ...update, token: current.token });
+    }
     passwordForm.reset();
     status(passwordStatus, "Mot de passe modifié. Utilisez le nouveau à la prochaine connexion.");
   } catch (error) {
@@ -305,6 +435,110 @@ passwordForm.addEventListener("submit", async (event) => {
     changingPassword = false;
     savePassword.disabled = closePassword.disabled = false;
     updatePublishButton();
+  }
+});
+
+function resetMfaEnrollment() {
+  if (mfaEnrollment?.qrUrl) URL.revokeObjectURL(mfaEnrollment.qrUrl);
+  mfaEnrollment = undefined;
+  mfaQr.removeAttribute("src");
+  mfaSecret.textContent = "";
+  mfaEnrollForm.reset();
+  mfaConfirmForm.reset();
+  mfaEnrollForm.hidden = false;
+  mfaConfirmForm.hidden = true;
+  status(mfaSetupStatus, "");
+}
+
+function removePendingFactor(factorId, token) {
+  return maraRequest(`/auth/v1/factors/${encodeURIComponent(factorId)}`, { method: "DELETE", token }).catch(() => {});
+}
+
+function closeMfaSetup(message) {
+  const current = session;
+  if (mfaEnrollment && current) void removePendingFactor(mfaEnrollment.id, current.token);
+  resetMfaEnrollment();
+  mfaDialog.close();
+  if (current) showAccountSettings(message);
+}
+
+mfaSetup.addEventListener("click", () => {
+  if (!session || session.mfaVerified || changingPassword) return;
+  passwordDialog.close();
+  mfaDialog.showModal();
+});
+mfaClose.addEventListener("click", () => closeMfaSetup());
+mfaDialog.addEventListener("cancel", (event) => {
+  event.preventDefault();
+  if (!mfaClose.disabled) closeMfaSetup();
+});
+
+mfaEnrollForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const current = session;
+  const submit = mfaEnrollForm.querySelector("button");
+  if (!current || mfaClose.disabled || mfaEnrollment) return;
+  submit.disabled = mfaClose.disabled = true;
+  status(mfaSetupStatus, "Vérification du mot de passe…");
+  try {
+    const auth = await signInWithPassword(current.email, mfaEnrollForm.elements.password.value);
+    void revokeSession(auth.access_token);
+    if (session !== current) return;
+    if (auth.user?.id !== current.userId || verifiedTotp(auth)) {
+      void revokeSession(disconnect("Reconnectez-vous pour actualiser la sécurité du compte."));
+      return;
+    }
+    const factor = await adminRequest("/auth/v1/factors", {
+      method: "POST",
+      body: { factor_type: "totp", issuer: "Mara Pastel" }
+    });
+    if (session !== current) {
+      void removePendingFactor(factor.id, current.token);
+      return;
+    }
+    const qrUrl = URL.createObjectURL(new Blob([factor.totp.qr_code], { type: "image/svg+xml" }));
+    mfaEnrollment = { id: factor.id, qrUrl };
+    mfaQr.src = qrUrl;
+    mfaSecret.textContent = factor.totp.secret;
+    mfaEnrollForm.hidden = true;
+    mfaConfirmForm.hidden = false;
+    mfaConfirmForm.elements.code.focus();
+    status(mfaSetupStatus, "");
+  } catch (error) {
+    if (session !== current || sessionError(error)) return;
+    const message = error.code === "invalid_credentials" ? "Mot de passe incorrect."
+      : error.status === 429 ? "Trop de tentatives. Réessayez dans quelques instants."
+        : "Configuration impossible. Vérifiez que les codes TOTP sont activés dans Supabase Auth.";
+    status(mfaSetupStatus, message, true);
+  } finally {
+    mfaEnrollForm.reset();
+    submit.disabled = mfaClose.disabled = false;
+  }
+});
+
+mfaConfirmForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const current = session;
+  const enrollment = mfaEnrollment;
+  const submit = mfaConfirmForm.querySelector("button");
+  if (!current || !enrollment || mfaClose.disabled) return;
+  submit.disabled = mfaClose.disabled = true;
+  status(mfaSetupStatus, "Vérification du code…");
+  try {
+    const auth = await verifyTotp(adminRequest, enrollment.id, mfaConfirmForm.elements.code.value);
+    if (session !== current) {
+      void revokeSession(auth.access_token);
+      return;
+    }
+    applySession(auth, current);
+    current.mfaVerified = true;
+    resetMfaEnrollment();
+    closeMfaSetup("Double authentification activée. Votre application fournira le code à la prochaine connexion.");
+  } catch (error) {
+    if (session === current && !sessionError(error)) status(mfaSetupStatus, mfaError(error), true);
+  } finally {
+    mfaConfirmForm.reset();
+    submit.disabled = mfaClose.disabled = false;
   }
 });
 
