@@ -194,11 +194,17 @@ async function showPublishedSite() {
     const source = content.images?.[image.dataset.maraImage];
     const url = maraMediaUrl(source?.path);
     if (!url) return;
+    const icon = image.closest(".shot")?.querySelector("svg");
+    if (icon) {
+      icon.setAttribute("hidden", "");
+      image.addEventListener("error", () => {
+        image.hidden = true;
+        icon.removeAttribute("hidden");
+      }, { once: true });
+    }
     image.src = url;
     image.alt = typeof source.alt === "string" ? source.alt.trim() : "";
     image.hidden = false;
-    const icon = image.closest(".shot")?.querySelector("svg");
-    if (icon) icon.hidden = true;
   });
   const chips = document.querySelectorAll(".chips span");
   quantityControls.forEach((control, index) => {
