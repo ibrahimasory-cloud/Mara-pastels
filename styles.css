@@ -95,3 +95,168 @@ footer .cols{grid-template-columns:1.4fr 1fr 1.2fr}
 .order button.btn { border: 0; font: inherit; font-weight: 700; cursor: pointer; }
 .shot { position: relative; overflow: hidden; }
 .shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .storefront { --motion-out: cubic-bezier(.16, 1, .3, 1); }
+
+  #accueil .bg {
+    animation: hero-photo-in 1550ms cubic-bezier(.2, .7, .3, 1) backwards;
+    transform-origin: 65% 35%;
+  }
+  #accueil .hero-body h1 {
+    animation: hero-title-in 960ms var(--motion-out) 80ms backwards;
+  }
+  #accueil .lead,
+  #accueil .actions > *,
+  #accueil .facts > li {
+    animation: content-arrive 740ms var(--motion-out) var(--intro-delay) backwards;
+  }
+  #accueil .lead { --intro-delay: 235ms; }
+  #accueil .actions > :first-child { --intro-delay: 335ms; }
+  #accueil .actions > :nth-child(2) { --intro-delay: 425ms; }
+  #accueil .facts > :first-child { --intro-delay: 490ms; }
+  #accueil .facts > :nth-child(2) { --intro-delay: 565ms; }
+  #accueil .facts > :nth-child(3) { --intro-delay: 640ms; }
+
+  @keyframes hero-photo-in {
+    from { opacity: .16; transform: scale(1.11); }
+  }
+  @keyframes hero-title-in {
+    from { opacity: .18; clip-path: inset(0 0 78%); transform: translateY(25px); }
+    to { opacity: 1; clip-path: inset(-10% -4% -10%); transform: translateY(0); }
+  }
+  @keyframes content-arrive {
+    from { opacity: 0; transform: translateY(18px); }
+  }
+
+  main .motion-enter:not(#albums),
+  #albums.motion-enter > .album {
+    animation: section-arrive 720ms var(--motion-out) var(--stagger, 0ms) backwards;
+  }
+  @keyframes section-arrive {
+    from { opacity: .25; transform: translateY(22px) scale(.985); }
+  }
+  @media (min-width: 640px) {
+    main .grid > :nth-child(3n + 2),
+    .about > :nth-child(2) { --stagger: 90ms; }
+    main .grid > :nth-child(3n + 3) { --stagger: 180ms; }
+  }
+
+  .storefront :is(.btn, .qty button) {
+    transition: translate 240ms var(--motion-out), filter 240ms ease, background-color 240ms ease;
+  }
+  .storefront :is(.btn, .qty button):not(:disabled):active { translate: 0 2px; }
+  #formulaire .qty button:hover {
+    background-color: var(--red);
+    color: #fff;
+    border-color: var(--red);
+  }
+
+  #accueil .menu:not([hidden]) {
+    animation: menu-arrive 300ms var(--motion-out) backwards;
+    transform-origin: 50% 0;
+  }
+  @keyframes menu-arrive {
+    from { opacity: 0; transform: translateY(-8px) scale(.97); }
+  }
+
+  #pastels .shot > img:not([hidden]) {
+    animation: photo-settle 700ms var(--motion-out) backwards;
+  }
+  @keyframes photo-settle {
+    from { opacity: .32; transform: scale(1.08); }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .storefront .btn:not(:disabled):hover { translate: 0 -2px; }
+    main :is(.grid > article.card, .album) {
+      transition: translate 420ms var(--motion-out), box-shadow 420ms var(--motion-out), border-color 320ms ease;
+    }
+    main :is(.grid > article.card:hover, .album:hover, .album:focus-visible) {
+      translate: 0 -6px;
+      box-shadow: 0 18px 36px rgba(0, 0, 0, .16);
+      border-color: color-mix(in srgb, var(--red) 35%, var(--line));
+    }
+    main .grid .tile > .ic {
+      transition: transform 480ms var(--motion-out);
+    }
+    main .grid > article:hover .tile > .ic { transform: rotate(-9deg) scale(1.13); }
+    #pastels .shot > img {
+      transition: scale 680ms var(--motion-out);
+    }
+    #pastels article:hover .shot > img { scale: 1.08; }
+    #pastels .shot:has(> img:not([hidden]))::after {
+      position: absolute;
+      inset: 0 auto 0 -50%;
+      width: 48%;
+      content: "";
+      pointer-events: none;
+      background: linear-gradient(90deg, transparent, rgba(255, 244, 207, .24), transparent);
+      transform: translateX(0) skewX(-20deg);
+      transition: transform 760ms var(--motion-out);
+    }
+    #pastels article:hover .shot::after { transform: translateX(335%) skewX(-20deg); }
+  }
+
+  #faq details[open] > p {
+    animation: content-arrive 340ms var(--motion-out) backwards;
+  }
+  #faq details[open] > summary::after {
+    animation: faq-icon-in 280ms var(--motion-out) backwards;
+  }
+  @keyframes faq-icon-in {
+    from { opacity: .55; transform: rotate(-45deg) scale(.78); }
+  }
+  @supports selector(details::details-content) and (interpolate-size: allow-keywords) {
+    #faq details { interpolate-size: allow-keywords; }
+    #faq details::details-content {
+      block-size: 0;
+      overflow: clip;
+      transition: block-size 340ms var(--motion-out), content-visibility 340ms allow-discrete;
+    }
+    #faq details[open]::details-content { block-size: auto; }
+  }
+
+  #dlg[open] { animation: album-arrive 420ms var(--motion-out) backwards; }
+  #dlg[open]::backdrop { animation: backdrop-arrive 300ms ease-out backwards; }
+  #dlg[open] .pics img {
+    animation: content-arrive 460ms var(--motion-out) var(--photo-delay, 100ms) backwards;
+  }
+  #dlg .pics img:nth-child(3n + 2) { --photo-delay: 155ms; }
+  #dlg .pics img:nth-child(3n + 3) { --photo-delay: 210ms; }
+  @keyframes album-arrive {
+    from { opacity: 0; transform: translateY(24px) scale(.95); }
+  }
+  @keyframes backdrop-arrive {
+    from { opacity: 0; }
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .storefront::before {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 21;
+      height: 3px;
+      content: "";
+      pointer-events: none;
+      background: linear-gradient(90deg, var(--red), var(--gold));
+      transform-origin: left;
+      animation: scroll-progress 1ms linear both;
+      animation-timeline: scroll(root block);
+    }
+    #accueil { view-timeline: --storefront-hero block; }
+    #accueil .bg {
+      animation: hero-photo-in 1550ms cubic-bezier(.2, .7, .3, 1) backwards, hero-depth 1ms linear both;
+      animation-timeline: auto, --storefront-hero;
+      animation-range: normal, exit 0% exit 100%;
+    }
+    @keyframes scroll-progress {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+    @keyframes hero-depth {
+      from { translate: 0 0; }
+      to { translate: 0 12%; }
+    }
+  }
+}

@@ -6,6 +6,8 @@ const orderForm = document.querySelector("#order-form");
 const quantityError = document.querySelector("#er");
 const orderCount = document.querySelector("#np");
 const orderAmount = document.querySelector("#pr");
+const motionPreference = window.matchMedia("(prefers-reduced-motion: no-preference)");
+let amountAnimation;
 
 function formatPrice(price) {
   return `${priceFormatter.format(price)} GNF`;
@@ -52,10 +54,25 @@ function totalQuantity(items) {
 
 function updateOrder() {
   const quantity = totalQuantity(orderQuantities());
+  const amount = formatPrice(quantity * unitPrice);
+  const amountChanged = orderAmount.value !== amount;
   orderCount.textContent = formatQuantity(quantity);
-  orderAmount.value = formatPrice(quantity * unitPrice);
+  orderAmount.value = amount;
   quantityError.hidden = true;
+
+  if (amountChanged && motionPreference.matches && typeof orderAmount.animate === "function") {
+    amountAnimation?.cancel();
+    amountAnimation = orderAmount.animate([
+      { transform: "translateY(5px) scale(.96)", opacity: .7 },
+      { transform: "translateY(-2px) scale(1.04)", offset: .62 },
+      { transform: "none", opacity: 1 }
+    ], { duration: 340, easing: "cubic-bezier(.2, .75, .25, 1)" });
+  }
 }
+
+motionPreference.addEventListener("change", (event) => {
+  if (!event.matches) amountAnimation?.cancel();
+});
 
 const addressInput = orderForm.elements.deliveryAddress;
 addressInput.addEventListener("input", () => addressInput.setCustomValidity(""));
@@ -230,3 +247,22 @@ async function showPublishedSite() {
 showPublishedSite().catch(() => {
   // La vitrine conserve le contenu local si Supabase est indisponible.
 });
+
+if (motionPreference.matches && "IntersectionObserver" in window) {
+  const revealObserver = new IntersectionObserver((entries) => {
+    for (const { target, isIntersecting } of entries) {
+      if (!isIntersecting) continue;
+      target.classList.add("motion-enter");
+      revealObserver.unobserve(target);
+    }
+  }, { rootMargin: "0px 0px 52px 0px" });
+
+  // Reveals are optional: no content is hidden while it waits for the observer.
+  const revealTargets = document.querySelectorAll(
+    "main .head, main .grid > article, .about > *, .faq details, #albums, .cta"
+  );
+  revealTargets.forEach((target) => {
+    const { top, height } = target.getBoundingClientRect();
+    if (height === 0 || top >= window.innerHeight) revealObserver.observe(target);
+  });
+}
