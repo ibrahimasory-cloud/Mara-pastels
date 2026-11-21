@@ -14,7 +14,7 @@
 <script src="content.js?v=4" defer></script>
 <script src="supabase-config.js" defer></script>
 <script src="site-data.js?v=4" defer></script>
-<script src="script.js?v=4" defer></script>
+<script src="script.js?v=5" defer></script>
 </head>
 <body class="storefront">
 <p class="preview-notice" id="preview-notice" hidden>Aperçu du brouillon administrateur</p>
@@ -79,7 +79,7 @@
 <section class="s alt" id="pastels"><div class="wrap">
 <div class="head"><h2>Nos pastels</h2><p>Mini pastels, Pastel King et sauce maison.</p></div>
 <div class="grid c3">
-<article class="card" data-product="mini"><div class="shot"><svg class="ic" aria-hidden="true"><use href="#i-chef"/></svg><img data-mara-image="product.poulet" alt="" hidden loading="lazy" decoding="async"></div><h3 data-mara-text="product.mini.title">Mini pastels</h3><p data-mara-text="product.mini.body">De petits pastels faits maison, au poulet, à la viande ou au thon.</p><p class="product-rate" data-rate="mini">30 000 GNF les 6</p><p class="product-note" data-product-note="mini">6 pièces minimum. 5 000 GNF par mini pastel supplémentaire.</p></article>
+<article class="card" data-product="mini"><div class="shot"><svg class="ic" aria-hidden="true"><use href="#i-chef"/></svg><img data-mara-image="product.poulet" alt="" hidden loading="lazy" decoding="async"></div><h3 data-mara-text="product.mini.title">Mini pastels</h3><p data-mara-text="product.mini.body">De petits pastels faits maison, au poulet, à la viande ou au thon.</p><p class="product-rate" data-rate="mini">30 000 GNF les 6</p><p class="product-note" data-product-note="mini">Commande à partir de 6 pièces, garnitures au choix.</p></article>
 <article class="card" data-product="king"><div class="shot"><svg class="ic" aria-hidden="true"><use href="#i-chef"/></svg><img data-mara-image="product.thon" alt="" hidden loading="lazy" decoding="async"></div><h3 data-mara-text="product.king.title">Pastel King</h3><p data-mara-text="product.king.body">Un grand pastel fait maison, proposé à l’unité.</p><p class="product-rate" data-rate="king">40 000 GNF la pièce</p><p class="product-note" data-product-note="king">À partir d’une pièce.</p></article>
 <article class="card" data-product="sauce"><div class="shot"><svg class="ic" aria-hidden="true"><use href="#i-chef"/></svg><img data-mara-image="product.viande" alt="" hidden loading="lazy" decoding="async"></div><h3 data-mara-text="product.sauce.title">La sauce magique</h3><p data-mara-text="product.sauce.body">Notre sauce maison, en accompagnement de vos pastels.</p><p class="product-rate" data-rate="sauce">Prix confirmé sur WhatsApp</p><p class="product-note" data-product-note="sauce">En accompagnement d’une commande de pastels.</p></article>
 </div></div></section>
@@ -90,10 +90,10 @@
 <fieldset id="order-fields">
 <legend class="sr-only">Votre commande</legend>
 <fieldset class="order-group" data-order-product="mini"><legend>Mini pastels</legend>
-<p class="order-hint" id="mini-rule">6 pièces minimum, garnitures au choix.</p>
+<p class="order-hint" id="mini-rule">Minimum de 6 mini pastels par commande, toutes garnitures confondues.</p>
 <div id="mini-quantities"></div>
 </fieldset>
-<fieldset class="order-group" data-order-product="king"><legend>Pastel King</legend><div id="king-quantities"></div></fieldset>
+<fieldset class="order-group" data-order-product="king"><legend>Pastel King</legend><p class="order-hint">Disponible à l’unité.</p><div id="king-quantities"></div></fieldset>
 <label class="order-sauce" data-order-product="sauce"><input name="sauce" type="checkbox"> Ajouter la sauce magique <span id="sauce-order-price"></span></label>
 <div class="grid c2 order-customer">
 <label class="fld">Prénom<input name="firstName" autocomplete="given-name" maxlength="80" required></label>
@@ -133,7 +133,7 @@
 <div class="faq">
 <details><summary>Comment passer commande ?</summary><p>Les demandes sont prises <span data-setting="orderHours">du lundi au vendredi</span>. Préparez la vôtre avec le formulaire, puis envoyez le message WhatsApp.</p></details>
 <details><summary>Quand mes pastels sont-ils préparés et livrés ?</summary><p>Les livraisons ont lieu <span data-setting="deliveryHours">le week-end</span>. La commande et les frais de livraison sont confirmés sur WhatsApp.</p></details>
-<details><summary>Quelle quantité minimale commander ?</summary><p id="faq-minimum">Les mini pastels se commandent par 6 au minimum. Le Pastel King se commande à l’unité.</p></details>
+<details><summary>Quelle quantité minimale commander ?</summary><p id="faq-minimum">Le minimum de 6 s’applique uniquement aux mini pastels. Vous pouvez commander un seul Pastel King.</p></details>
 <details><summary>Quelles garnitures proposez-vous ?</summary><p data-mara-text="faq.fillings">Les mini pastels sont proposés au poulet, à la viande ou au thon. Vous pouvez mélanger les garnitures dans une même commande.</p></details>
 <details><summary>Faites-vous des commandes pour des événements ?</summary><p data-mara-text="faq.events">Pour une fête, une réunion ou une réception, contactez-nous sur WhatsApp avec la date et le nombre de personnes.</p></details>
 <details><summary>Livrez-vous dans mon quartier ?</summary><p data-mara-text="faq.delivery">Indiquez votre quartier dans le formulaire. Nous confirmons la livraison et ses frais sur WhatsApp.</p></details>

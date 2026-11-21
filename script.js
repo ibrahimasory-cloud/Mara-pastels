@@ -107,7 +107,7 @@ orderForm.addEventListener("submit", async (event) => {
   const quantities = selectedQuantities();
   const mini = quantities.chicken + quantities.meat + quantities.tuna;
   if (mini > 0 && mini < settings.miniMinimum) {
-    showOrderError(`Choisissez au moins ${settings.miniMinimum} mini pastels. Il vous en manque ${settings.miniMinimum - mini}.`);
+    showOrderError(`Les mini pastels se commandent à partir de ${settings.miniMinimum} pièces. Il vous en manque ${settings.miniMinimum - mini}.`);
     quantityControls[0].input.focus();
     return;
   }
@@ -207,7 +207,7 @@ function applyOrderingSettings(next, revision) {
       rate.textContent = "Indisponible";
     } else if (id === "mini") {
       rate.textContent = `${formatPrice(settings.miniPrice * settings.miniMinimum)} les ${settings.miniMinimum}`;
-      note.textContent = `${settings.miniMinimum} pièces minimum. Puis ${formatPrice(settings.miniPrice)} par mini pastel supplémentaire.`;
+      note.textContent = `Commande à partir de ${settings.miniMinimum} pièces, garnitures au choix.`;
       group.querySelector("legend").textContent = label;
     } else if (id === "king") {
       rate.textContent = `${formatPrice(settings.kingPrice)} la pièce`;
@@ -217,11 +217,11 @@ function applyOrderingSettings(next, revision) {
       rate.textContent = settings.saucePrice === null ? "Prix confirmé sur WhatsApp" : formatPrice(settings.saucePrice);
     }
   }
-  document.querySelector("#mini-rule").textContent = `${settings.miniMinimum} mini pastels minimum, toutes garnitures confondues.`;
+  document.querySelector("#mini-rule").textContent = `Minimum de ${settings.miniMinimum} mini pastels par commande, toutes garnitures confondues.`;
   document.querySelector("#sauce-order-price").textContent = settings.saucePrice === null
     ? "(prix à confirmer sur WhatsApp)" : `(${formatPrice(settings.saucePrice)})`;
   document.querySelector("#faq-minimum").textContent =
-    `Les mini pastels se commandent par ${settings.miniMinimum} au minimum. Le Pastel King se commande à l’unité.`;
+    `Le minimum de ${settings.miniMinimum} s’applique uniquement aux mini pastels. Vous pouvez commander un seul Pastel King.`;
   document.querySelectorAll("[data-setting]").forEach((entry) => {
     const text = settings[entry.dataset.setting];
     if (typeof text === "string") entry.textContent = text;
