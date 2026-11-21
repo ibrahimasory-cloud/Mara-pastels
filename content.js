@@ -22,7 +22,7 @@ const maraPastel = {
     sauceAvailable: true,
     whatsappNumber: "224626209791",
     orderHours: "Du lundi au vendredi",
-    deliveryHours: "Le week-end",
+    deliveryHours: "sur rendez-vous",
     deliveryArea: "Kipé, Conakry",
     payment: "",
     facebook: "",

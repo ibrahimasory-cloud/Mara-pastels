@@ -5,7 +5,7 @@ const maraFields = [
     title: "Accueil et photo principale",
     texts: [
       ["hero.title", "Titre", "La saveur qui rassemble", 100],
-      ["hero.body", "Présentation", "Des mini pastels faits maison, un Pastel King grand format et notre sauce maison. Commandez sur WhatsApp et faites-vous livrer le week-end à Conakry.", 500]
+      ["hero.body", "Présentation", "Des mini pastels faits maison, un Pastel King grand format et notre sauce maison. Commandez sur WhatsApp et faites-vous livrer à Conakry.", 500]
     ],
     image: "hero"
   },

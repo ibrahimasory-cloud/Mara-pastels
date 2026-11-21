@@ -19,6 +19,8 @@ Dans les réglages **Authentication → Sign In / Providers → Email** du proje
 
 Avant de déployer la nouvelle vitrine, exécuter la migration [202611210001_mara_orders.sql](supabase/migrations/202611210001_mara_orders.sql) dans le SQL Editor Supabase, après la migration d’administration. Elle crée la table privée `mara_orders` et la fonction de dépôt des demandes. Le site ouvre WhatsApp après confirmation de l’enregistrement par Supabase. Une demande enregistrée reste en attente jusqu’à sa confirmation par Mara Pastel.
 
+Exécuter ensuite [202611210002_mara_livraison_sept_jours.sql](supabase/migrations/202611210002_mara_livraison_sept_jours.sql) pour accepter les sept jours de la semaine. Le jour sélectionné est confirmé sur WhatsApp.
+
 Dans **Demandes de commande**, tu peux actualiser la liste, changer le statut et exporter toutes les demandes. Le bouton **Exporter en PDF** ouvre la fenêtre d’impression. Choisis **Enregistrer au format PDF** pour télécharger le document.
 
 Dans **Réglages**, tu peux modifier les prix, disponibilités, horaires, zones, moyens de paiement et liens sociaux. Les horaires saisis sont affichés sur la vitrine. Les brouillons sont restaurés sur le même navigateur pour la même révision publiée. **Prévisualiser** ouvre la vitrine dans un nouvel onglet avec le brouillon et le dépôt de commande désactivé. **Sauvegarder le contenu** télécharge le texte et les références des médias. La sauvegarde Supabase et la copie des fichiers photo restent nécessaires pour une restauration complète.

@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mara Pastel – Pastels faits maison à Kipé</title>
-<meta name="description" content="Mini pastels, Pastel King et sauce maison à Kipé, Conakry. Commande sur WhatsApp, livraison le week-end.">
+<meta name="description" content="Mini pastels, Pastel King et sauce maison à Kipé, Conakry. Commande sur WhatsApp, livraison à Conakry.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap">
 <meta name="theme-color" content="#d4122e">
 <meta property="og:title" content="Mara Pastel – Pastels faits maison à Kipé">
-<meta property="og:description" content="Mini pastels, Pastel King et sauce maison à Kipé, Conakry. Commande sur WhatsApp, livraison le week-end.">
+<meta property="og:description" content="Mini pastels, Pastel King et sauce maison à Kipé, Conakry. Commande sur WhatsApp, livraison à Conakry.">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Restaurant","name":"Mara Pastel","telephone":"+224626209791","servesCuisine":"Pastels","address":{"@type":"PostalAddress","addressLocality":"Kipé, Conakry","addressCountry":"GN"}}</script>
 <link rel="stylesheet" href="styles.css?v=4">
-<script src="content.js?v=4" defer></script>
+<script src="content.js?v=5" defer></script>
 <script src="supabase-config.js" defer></script>
-<script src="site-data.js?v=4" defer></script>
+<script src="site-data.js?v=5" defer></script>
 <script src="script.js?v=5" defer></script>
 </head>
 <body class="storefront">
@@ -53,14 +53,14 @@
 </header>
 <div class="wrap hero-body">
 <h1 data-mara-text="hero.title">La saveur qui rassemble</h1>
-<p class="lead" data-mara-text="hero.body">Des mini pastels faits maison, un Pastel King grand format et notre sauce maison. Commandez sur WhatsApp et faites-vous livrer le week-end à Conakry.</p>
+<p class="lead" data-mara-text="hero.body">Des mini pastels faits maison, un Pastel King grand format et notre sauce maison. Commandez sur WhatsApp et faites-vous livrer à Conakry.</p>
 <div class="actions">
 <a class="btn" href="#formulaire"><svg class="ic"><use href="#i-chat"/></svg>Préparer ma commande</a>
 <a class="btn ghost" href="#pastels">Voir le menu</a>
 </div>
 <ul class="facts">
 <li><svg class="ic"><use href="#i-cal"/></svg><span>Commandes <span data-setting="orderHours">du lundi au vendredi</span></span></li>
-<li><svg class="ic"><use href="#i-truck"/></svg><span>Livraison <span data-setting="deliveryHours">le week-end</span></span></li>
+<li><svg class="ic"><use href="#i-truck"/></svg><span>Livraison <span data-setting="deliveryHours">sur rendez-vous</span></span></li>
 <li><svg class="ic"><use href="#i-pin"/></svg><span data-setting="deliveryArea">Kipé, Conakry</span></li>
 </ul>
 </div>
@@ -99,10 +99,20 @@
 <label class="fld">Prénom<input name="firstName" autocomplete="given-name" maxlength="80" required></label>
 <label class="fld">Nom<input name="lastName" autocomplete="family-name" maxlength="80" required></label>
 </div>
-<label class="fld">Jour de livraison <select name="deliveryDay" required><option>Samedi</option><option>Dimanche</option></select></label>
+<label class="fld">Jour de livraison souhaité
+  <select name="deliveryDay" required>
+    <option>Lundi</option>
+    <option>Mardi</option>
+    <option>Mercredi</option>
+    <option>Jeudi</option>
+    <option>Vendredi</option>
+    <option selected>Samedi</option>
+    <option>Dimanche</option>
+  </select>
+</label>
 <label class="fld">Adresse de livraison <textarea name="deliveryAddress" placeholder="Quartier, point de repère" autocomplete="street-address" maxlength="250" rows="2" required></textarea></label>
 <div class="tot"><span>Sous-total des produits</span><output id="pr" aria-live="polite">0 GNF</output></div>
-<p id="order-terms">Frais de livraison confirmés sur WhatsApp. Mara Pastel vous confirme la commande après réception de votre message.</p>
+<p id="order-terms">Mara Pastel vous confirme le jour, les frais de livraison et la commande sur WhatsApp après réception de votre message.</p>
 <p class="order-hint">Votre nom et votre adresse servent à traiter la demande. <a href="confidentialite.html">Confidentialité</a></p>
 <p class="order-hint" id="order-availability" role="status" hidden></p>
 <p class="err" id="er" role="alert" hidden></p>
@@ -132,7 +142,7 @@
 <div class="head"><h2>Questions fréquentes</h2></div>
 <div class="faq">
 <details><summary>Comment passer commande ?</summary><p>Les demandes sont prises <span data-setting="orderHours">du lundi au vendredi</span>. Préparez la vôtre avec le formulaire, puis envoyez le message WhatsApp.</p></details>
-<details><summary>Quand mes pastels sont-ils préparés et livrés ?</summary><p>Les livraisons ont lieu <span data-setting="deliveryHours">le week-end</span>. La commande et les frais de livraison sont confirmés sur WhatsApp.</p></details>
+<details><summary>Quand mes pastels sont-ils préparés et livrés ?</summary><p>La livraison se fait <span data-setting="deliveryHours">sur rendez-vous</span>. Nous confirmons le jour choisi et les frais sur WhatsApp.</p></details>
 <details><summary>Quelle quantité minimale commander ?</summary><p id="faq-minimum">Le minimum de 6 s’applique uniquement aux mini pastels. Vous pouvez commander un seul Pastel King.</p></details>
 <details><summary>Quelles garnitures proposez-vous ?</summary><p data-mara-text="faq.fillings">Les mini pastels sont proposés au poulet, à la viande ou au thon. Vous pouvez mélanger les garnitures dans une même commande.</p></details>
 <details><summary>Faites-vous des commandes pour des événements ?</summary><p data-mara-text="faq.events">Pour une fête, une réunion ou une réception, contactez-nous sur WhatsApp avec la date et le nombre de personnes.</p></details>
