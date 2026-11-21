@@ -24,22 +24,37 @@ function orderLines(order) {
 }
 
 function orderCard(order, printable = false) {
-  const card = node(printable ? "article" : "li", "", printable ? "print-order" : "card");
+  const name = `${order.first_name} ${order.last_name}`;
+  const reference = `MP-${order.id}`;
   const created = node("time", inboxDate.format(new Date(order.created_at)));
   created.dateTime = order.created_at;
-  card.append(
-    node("h3", `MP-${order.id} · ${order.first_name} ${order.last_name}`),
-    created,
+  const details = [
     node("p", `Livraison souhaitée : ${order.delivery_day} · ${order.address}`),
     orderLines(order),
     node("p", `Sous-total des produits : ${formatPrice(order.subtotal_gnf)}`),
     node("p", order.sauce_pending ? "Sauce et livraison à confirmer." : "Frais de livraison à confirmer.")
-  );
+  ];
 
   if (printable) {
-    card.append(node("p", `Statut : ${orderStatuses[order.status]}`));
+    const card = node("article", "", "print-order");
+    card.append(node("h3", `${reference} · ${name}`), created, ...details,
+      node("p", `Statut : ${orderStatuses[order.status]}`));
     return card;
   }
+
+  const card = node("li");
+  const row = node("details", "", "order-row");
+  const summary = node("summary", "", "order-summary");
+  const referenceBox = node("span");
+  referenceBox.append(node("strong", reference), created);
+  const delivery = node("span", "", "order-delivery");
+  delivery.append(node("small", "Livraison"), node("span", order.delivery_day));
+  const badge = node("span", orderStatuses[order.status], "order-badge");
+  badge.dataset.status = order.status;
+  summary.append(referenceBox, node("strong", name), delivery,
+    node("strong", formatPrice(order.subtotal_gnf), "order-amount"), badge);
+  const expanded = node("div", "", "order-expanded");
+  expanded.append(...details);
 
   const label = node("label", "Statut", "fld order-status-field");
   const select = node("select");
@@ -60,6 +75,9 @@ function orderCard(order, printable = false) {
       });
       if (!saved) throw new Error("Statut non enregistré");
       order.status = saved.status;
+      badge.textContent = orderStatuses[saved.status];
+      badge.dataset.status = saved.status;
+      invalidateDashboard();
     } catch (error) {
       select.value = order.status;
       if (session === current && !sessionError(error)) status(ordersStatus, "Le statut n’a pas pu être enregistré.", true);
@@ -68,13 +86,16 @@ function orderCard(order, printable = false) {
     }
   });
   label.append(select);
-  card.append(label);
+  expanded.append(label);
+  row.append(summary, expanded);
+  card.append(row);
   return card;
 }
 
-function getOrderPage(limit, before) {
-  const filter = before === undefined ? "" : `&id=lt.${encodeURIComponent(before)}`;
-  return adminRequest(`${maraOrderPath}?select=${orderColumns}&order=id.desc&limit=${limit}${filter}`);
+function getOrderPage(limit, before, { columns = orderColumns, start } = {}) {
+  const cursor = before === undefined ? "" : `&id=lt.${encodeURIComponent(before)}`;
+  const period = start ? `&created_at=gte.${encodeURIComponent(start.toISOString())}` : "";
+  return adminRequest(`${maraOrderPath}?select=${columns}&order=id.desc&limit=${limit}${cursor}${period}`);
 }
 
 async function loadOrders(previous = false) {
@@ -117,7 +138,10 @@ function clearOrders() {
   resetOrdersPrint();
 }
 
-refreshOrders.addEventListener("click", () => loadOrders());
+refreshOrders.addEventListener("click", () => {
+  invalidateDashboard();
+  void loadOrders();
+});
 moreOrders.addEventListener("click", () => loadOrders(true));
 window.addEventListener("afterprint", resetOrdersPrint);
 

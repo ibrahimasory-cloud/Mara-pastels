@@ -7,140 +7,194 @@
   <meta name="referrer" content="no-referrer">
   <meta name="theme-color" content="#d4122e">
   <title>Administration – Mara Pastel</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="../styles.css?v=4">
-  <link rel="stylesheet" href="admin.css?v=4">
+  <link rel="stylesheet" href="admin.css?v=5">
   <script src="../content.js?v=5" defer></script>
   <script src="../supabase-config.js" defer></script>
   <script src="../site-data.js?v=5" defer></script>
-  <script src="admin.js?v=4" defer></script>
-  <script src="orders.js" defer></script>
+  <script src="admin.js?v=5" defer></script>
+  <script src="orders.js?v=2" defer></script>
+  <script src="dashboard.js" defer></script>
 </head>
-<body>
-  <header class="hero admin-hero">
-    <img class="bg" src="../assets/mara-accueil.jpg" alt="">
-    <div class="veil"></div>
-    <div class="wrap top">
-      <a class="logo" href="../" aria-label="Mara Pastel, accueil"><img src="../assets/logo-mara-pastel.jpg" alt="Mara Pastel"></a>
-      <button class="btn ghost" id="logout" type="button" hidden>Se déconnecter</button>
+<body class="admin-shell">
+  <main class="admin-login-screen" id="login-panel">
+    <div class="admin-login-side">
+      <a class="admin-brand" href="../" aria-label="Mara Pastel, accueil">
+        <img src="../assets/logo-mara-pastel.jpg" alt="" width="48" height="48">
+        <span>Mara Pastel</span>
+      </a>
+      <form class="admin-login" id="login-form" method="post">
+        <h1>Connexion</h1>
+        <p>Accédez à votre espace d’administration.</p>
+        <label class="fld">Adresse e-mail
+          <input name="email" type="email" autocomplete="username" required>
+        </label>
+        <label class="fld">Mot de passe
+          <input name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="btn" type="submit" disabled>Se connecter</button>
+        <p id="login-status" class="admin-status" role="status"></p>
+      </form>
+      <a class="admin-login-home" href="../">Retour à la vitrine</a>
     </div>
-    <div class="wrap hero-body"><h1>Administration</h1></div>
-  </header>
+    <div class="admin-login-photo" aria-hidden="true">
+      <img src="../assets/mara-accueil.jpg" alt="" width="1400" height="1972">
+    </div>
+  </main>
 
-  <main>
-    <section class="s alt" id="login-panel">
-      <div class="wrap">
-        <form class="card admin-login" id="login-form" method="post">
-          <h2>Connexion</h2>
-          <label class="fld">Adresse e-mail
-            <input name="email" type="email" autocomplete="username" required>
-          </label>
-          <label class="fld">Mot de passe
-            <input name="password" type="password" autocomplete="current-password" required>
-          </label>
-          <button class="btn" type="submit" disabled>Se connecter</button>
-          <p id="login-status" class="admin-status" role="status"></p>
-        </form>
-      </div>
-    </section>
-
-    <div id="dashboard" hidden>
-      <nav class="wrap admin-nav" aria-label="Administration">
-        <a href="#demandes">Demandes de commande</a>
+  <div id="dashboard" class="admin-layout" hidden>
+    <aside class="admin-sidebar">
+      <a class="admin-brand" href="#tableau-de-bord" aria-label="Mara Pastel, tableau de bord">
+        <img src="../assets/logo-mara-pastel.jpg" alt="" width="44" height="44">
+        <span>Mara Pastel <small>Administration</small></span>
+      </a>
+      <nav class="admin-nav" aria-label="Administration">
+        <a href="#tableau-de-bord">Tableau de bord</a>
+        <a href="#demandes">Commandes</a>
         <a href="#messages">Messages WhatsApp</a>
         <a href="#contenu">Textes et photos</a>
-        <a href="#reglages">Réglages</a>
         <a href="#evenements">Galerie</a>
+        <a href="#reglages">Réglages</a>
       </nav>
+      <div class="admin-sidebar-footer">
+        <a href="../" target="_blank" rel="noopener noreferrer">Voir la vitrine</a>
+        <button class="admin-account-link" id="account-settings" type="button" aria-haspopup="dialog">Paramètres du compte</button>
+      </div>
+    </aside>
 
-      <section class="s alt" id="demandes">
-        <div class="wrap">
-          <div class="admin-section-header">
-            <div><h2>Demandes de commande</h2><p>Les demandes du formulaire attendent votre confirmation sur WhatsApp.</p></div>
-            <div class="order-admin-actions">
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <h1 id="admin-title" tabindex="-1">Tableau de bord</h1>
+        <button class="btn admin-secondary" id="logout" type="button" hidden>Se déconnecter</button>
+      </header>
+
+      <div class="admin-content">
+        <section class="admin-view" data-admin-view id="tableau-de-bord" aria-labelledby="admin-title">
+          <div class="admin-view-header">
+            <div>
+              <h2>Suivi des commandes</h2>
+              <p>Demandes reçues via le formulaire Mara Pastel.</p>
+            </div>
+            <div class="admin-actions">
+              <label class="admin-period">Période
+                <select id="dashboard-period">
+                  <option value="7">7 derniers jours</option>
+                  <option value="30" selected>30 derniers jours</option>
+                  <option value="all">Depuis le début</option>
+                </select>
+              </label>
+              <button class="btn admin-secondary" type="button" id="refresh-dashboard">Actualiser</button>
+            </div>
+          </div>
+          <p class="admin-status" id="dashboard-status" role="status"></p>
+          <div id="dashboard-results" hidden>
+            <dl class="metric-grid">
+              <div class="metric-card"><dt>Demandes reçues</dt><dd id="metric-received">—</dd></div>
+              <div class="metric-card"><dt>À confirmer</dt><dd id="metric-pending">—</dd></div>
+              <div class="metric-card"><dt>Confirmées</dt><dd id="metric-confirmed">—</dd></div>
+              <div class="metric-card metric-amount"><dt>Sous-total confirmé</dt><dd id="metric-amount">—</dd><small>Hors frais à confirmer</small></div>
+            </dl>
+            <div class="insight-grid">
+              <section class="admin-panel activity-panel">
+                <div class="insight-heading"><h2>Activité des commandes</h2><p id="activity-range"></p></div>
+                <p id="activity-empty" class="panel-empty" hidden>Aucune demande enregistrée sur cette période.</p>
+                <div class="activity-chart" id="activity-chart" hidden>
+                  <div class="activity-scale" aria-hidden="true"><span id="activity-maximum"></span><span>0</span></div>
+                  <ol class="activity-bars" id="activity-bars" aria-label="Nombre de demandes par date"></ol>
+                </div>
+              </section>
+              <section class="admin-panel products-panel">
+                <div class="insight-heading">
+                  <h2>Mini pastels et Pastel King</h2>
+                  <p>Demandes hors annulations. Une demande peut contenir les deux produits.</p>
+                </div>
+                <div class="product-comparison" id="product-comparison"></div>
+                <p class="comparison-result" id="product-insight"></p>
+              </section>
+            </div>
+            <div class="dashboard-detail">
+              <p id="dashboard-cancelled"></p>
+              <a href="#demandes">Voir les demandes <span aria-hidden="true">→</span></a>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-view" data-admin-view id="demandes" hidden aria-labelledby="admin-title">
+          <div class="admin-view-header">
+            <p>Consultez les demandes et mettez leur statut à jour après confirmation sur WhatsApp.</p>
+            <div class="admin-actions">
               <button class="btn admin-secondary" type="button" id="refresh-orders">Actualiser</button>
               <button class="btn" type="button" id="export-orders" disabled>Exporter en PDF</button>
             </div>
           </div>
           <p class="admin-status" id="orders-status" role="status"></p>
-          <ul class="inbox-list" id="orders-list"></ul>
-          <button class="btn admin-secondary" id="more-orders" type="button" hidden>Demandes précédentes</button>
-        </div>
-      </section>
+          <ul class="orders-list" id="orders-list"></ul>
+          <button class="btn admin-secondary load-more" id="more-orders" type="button" hidden>Demandes précédentes</button>
+        </section>
 
-      <section class="s" id="messages">
-        <div class="wrap">
-          <div class="admin-section-header">
-            <h2>Messages WhatsApp</h2>
+        <section class="admin-view" data-admin-view id="messages" hidden aria-labelledby="admin-title">
+          <div class="admin-view-header">
+            <p>Retrouvez les messages reçus via WhatsApp Business.</p>
             <button class="btn admin-secondary" type="button" id="refresh-inbox">Actualiser</button>
           </div>
           <p class="admin-status" role="status" id="inbox-status"></p>
           <ul class="inbox-list" id="inbox-list"></ul>
-          <button class="btn admin-secondary" type="button" id="more-messages" hidden>Messages précédents</button>
-        </div>
-      </section>
+          <button class="btn admin-secondary load-more" type="button" id="more-messages" hidden>Messages précédents</button>
+        </section>
 
-      <section class="s alt" id="contenu">
-        <div class="wrap">
-          <div class="head"><h2>Textes et photos</h2><p>Les changements apparaissent sur la vitrine après publication.</p></div>
-          <div class="grid c2" id="editors"></div>
-        </div>
-      </section>
+        <section class="admin-view" data-admin-view id="contenu" hidden aria-labelledby="admin-title">
+          <div class="admin-view-header"><p>Modifiez les textes et les photos de la vitrine avant publication.</p></div>
+          <div class="admin-editor-grid" id="editors"></div>
+        </section>
 
-      <section class="s" id="reglages">
-        <div class="wrap">
-          <div class="admin-section-header">
-            <div><h2>Réglages du site</h2><p>Tarifs, disponibilité et informations pratiques.</p></div>
+        <section class="admin-view" data-admin-view id="reglages" hidden aria-labelledby="admin-title">
+          <div class="admin-view-header">
+            <p>Gérez les tarifs, les disponibilités et les informations pratiques.</p>
             <button class="btn admin-secondary" id="backup-content" type="button">Sauvegarder le contenu</button>
           </div>
-          <div class="grid c2" id="site-settings"></div>
-        </div>
-      </section>
+          <div class="admin-editor-grid" id="site-settings"></div>
+        </section>
 
-      <section class="s" id="evenements">
-        <div class="wrap">
-          <div class="admin-section-header">
-            <div><h2>Galerie par événement</h2><p>Ajoutez un événement et importez les photos de son album.</p></div>
-            <button class="btn admin-secondary" id="add-event" type="button">Ajouter un événement</button>
+        <section class="admin-view" data-admin-view id="evenements" hidden aria-labelledby="admin-title">
+          <div class="admin-view-header">
+            <p>Regroupez les photos de la vitrine dans un album par événement.</p>
+            <button class="btn" id="add-event" type="button">Ajouter un événement</button>
           </div>
-          <p id="empty-events">Aucun événement pour le moment.</p>
-          <div class="grid c2" id="event-editors"></div>
-        </div>
-      </section>
-
-      <div class="wrap admin-account">
-        <button class="admin-account-link" id="account-settings" type="button" aria-haspopup="dialog">Paramètres du compte</button>
+          <p id="empty-events" class="panel-empty">Aucun événement pour le moment.</p>
+          <div class="admin-editor-grid" id="event-editors"></div>
+        </section>
       </div>
 
-      <dialog id="password-dialog" aria-labelledby="password-title">
-        <form id="password-form" method="post">
-          <h2 id="password-title">Modifier le mot de passe</h2>
-          <label class="fld">Ancien mot de passe
-            <input name="currentPassword" type="password" autocomplete="current-password" required autofocus>
-          </label>
-          <label class="fld">Nouveau mot de passe
-            <input name="newPassword" type="password" autocomplete="new-password" required>
-          </label>
-          <label class="fld">Confirmer le nouveau mot de passe
-            <input name="confirmPassword" type="password" autocomplete="new-password" required>
-          </label>
-          <p id="password-status" class="admin-status" role="status"></p>
-          <div class="password-actions">
-            <button class="btn" id="save-password" type="submit">Modifier le mot de passe</button>
-            <button class="btn admin-secondary" id="close-password" type="button">Fermer</button>
-          </div>
-        </form>
-      </dialog>
-
-      <div class="admin-publish">
-        <div class="wrap">
-          <p class="admin-status" role="status" id="publish-status"></p>
+      <div class="admin-publish" id="admin-publish" hidden>
+        <p class="admin-status" role="status" id="publish-status"></p>
+        <div class="admin-actions">
           <button class="btn admin-secondary" id="preview-draft" type="button">Prévisualiser</button>
           <button class="btn" id="publish" type="button" disabled>Publier sur la vitrine</button>
         </div>
       </div>
-    </div>
-  </main>
+    </main>
+
+    <dialog id="password-dialog" aria-labelledby="password-title">
+      <form id="password-form" method="post">
+        <h2 id="password-title">Modifier le mot de passe</h2>
+        <label class="fld">Ancien mot de passe
+          <input name="currentPassword" type="password" autocomplete="current-password" required autofocus>
+        </label>
+        <label class="fld">Nouveau mot de passe
+          <input name="newPassword" type="password" autocomplete="new-password" required>
+        </label>
+        <label class="fld">Confirmer le nouveau mot de passe
+          <input name="confirmPassword" type="password" autocomplete="new-password" required>
+        </label>
+        <p id="password-status" class="admin-status" role="status"></p>
+        <div class="password-actions">
+          <button class="btn" id="save-password" type="submit">Modifier le mot de passe</button>
+          <button class="btn admin-secondary" id="close-password" type="button">Fermer</button>
+        </div>
+      </form>
+    </dialog>
+  </div>
   <section id="orders-print" aria-label="Export des demandes" hidden></section>
 </body>
 </html>

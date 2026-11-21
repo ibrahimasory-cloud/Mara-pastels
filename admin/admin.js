@@ -4,6 +4,10 @@ const loginForm = document.querySelector("#login-form");
 const loginPanel = document.querySelector("#login-panel");
 const loginStatus = document.querySelector("#login-status");
 const dashboard = document.querySelector("#dashboard");
+const adminTitle = document.querySelector("#admin-title");
+const adminViews = [...document.querySelectorAll("[data-admin-view]")];
+const adminLinks = [...document.querySelectorAll(".admin-nav a")];
+const publishBar = document.querySelector("#admin-publish");
 const logoutButton = document.querySelector("#logout");
 const accountSettings = document.querySelector("#account-settings");
 const passwordDialog = document.querySelector("#password-dialog");
@@ -150,6 +154,7 @@ function disconnect(message) {
   eventEditors.replaceChildren();
   siteSettings.replaceChildren();
   clearOrders();
+  clearDashboard();
   status(loginStatus, message);
   return token;
 }
@@ -193,7 +198,8 @@ loginForm.addEventListener("submit", async (event) => {
     loginPanel.hidden = true;
     dashboard.hidden = false;
     logoutButton.hidden = false;
-    await Promise.all([loadInbox(), loadOrders()]);
+    showAdminView();
+    await Promise.all([loadInbox(), loadOrders(), loadDashboard()]);
   } catch (error) {
     disconnect(error.status === 400 || error.status === 401
       ? "Adresse e-mail ou mot de passe incorrect."
@@ -202,6 +208,27 @@ loginForm.addEventListener("submit", async (event) => {
     loginForm.elements.password.value = "";
     submit.disabled = false;
   }
+});
+
+function showAdminView(focus = false) {
+  const selected = adminLinks.find((link) => link.hash === location.hash) || adminLinks[0];
+  const id = selected.hash.slice(1);
+  for (const link of adminLinks) {
+    if (link === selected) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  }
+  for (const view of adminViews) view.hidden = view.id !== id;
+  adminTitle.textContent = selected.textContent.trim();
+  publishBar.hidden = !["contenu", "reglages", "evenements"].includes(id);
+  if (focus) {
+    window.scrollTo({ top: 0, behavior: "instant" });
+    adminTitle.focus({ preventScroll: true });
+    if (id === "tableau-de-bord" && dashboardNeedsRefresh) void loadDashboard();
+  }
+}
+
+window.addEventListener("hashchange", () => {
+  if (!dashboard.hidden) showAdminView(true);
 });
 
 logoutButton.addEventListener("click", async () => {
