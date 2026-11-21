@@ -1,73 +1,89 @@
 "use strict";
 
-const { whatsappNumber, phoneLabel, minimumQuantity, unitPrice, fillings, events, whatsappSource } = maraPastel;
-const priceFormatter = new Intl.NumberFormat("fr-FR");
+const { orderItems, products, events, whatsappSource } = maraPastel;
 const orderForm = document.querySelector("#order-form");
-const quantityError = document.querySelector("#er");
-const orderCount = document.querySelector("#np");
+const orderFields = document.querySelector("#order-fields");
+const orderSubmit = document.querySelector("#go");
+const orderError = document.querySelector("#er");
+const orderAvailability = document.querySelector("#order-availability");
 const orderAmount = document.querySelector("#pr");
+const orderSuccess = document.querySelector("#order-success");
+const orderWhatsApp = document.querySelector("#order-whatsapp");
 const motionPreference = window.matchMedia("(prefers-reduced-motion: no-preference)");
+let settings = maraSiteSettings();
+let catalogRevision = null;
+let attempt;
 let amountAnimation;
 
-function formatPrice(price) {
-  return `${priceFormatter.format(price)} GNF`;
-}
-
-function formatQuantity(quantity) {
-  return `${quantity} pastel${quantity > 1 ? "s" : ""}`;
-}
-
 function whatsappUrl(message) {
-  const url = new URL(`https://wa.me/${whatsappNumber}`);
+  const url = new URL(`https://wa.me/${settings.whatsappNumber}`);
   url.searchParams.set("text", `${message}\n\n${whatsappSource}`);
   return url.href;
 }
 
-const quantityControls = fillings.map(({ id, name }) => {
-  const row = document.querySelector(`[data-filling="${id}"]`);
-  const input = row.querySelector("input");
-  const [decrease, increase] = row.querySelectorAll("button");
-  row.querySelector("label").textContent = name;
-
-  function changeQuantity(delta) {
-    const quantity = Math.trunc(input.valueAsNumber) || 0;
-    input.value = Math.min(Number(input.max), Math.max(0, quantity + delta));
-    updateOrder();
-  }
-
-  decrease.addEventListener("click", () => changeQuantity(-1));
-  increase.addEventListener("click", () => changeQuantity(1));
+function quantityControl(item) {
+  const row = document.createElement("div");
+  row.className = "line";
+  const label = document.createElement("label");
+  label.htmlFor = `quantity-${item.id}`;
+  label.textContent = item.product === "mini" ? item.name.replace("Mini pastels ", "") : item.name;
+  const controls = document.createElement("div");
+  controls.className = "qty";
+  const input = document.createElement("input");
+  input.id = label.htmlFor;
+  input.type = "number";
+  input.inputMode = "numeric";
+  input.min = "0";
+  input.max = "2147483647";
+  input.step = "1";
+  input.value = "0";
+  input.setAttribute("aria-label", item.name);
+  const buttons = [-1, 1].map((delta) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = delta === 1 ? "+" : "−";
+    button.setAttribute("aria-label", `${delta === 1 ? "Ajouter" : "Retirer"} · ${item.name}`);
+    button.addEventListener("click", () => {
+      const quantity = Math.trunc(input.valueAsNumber) || 0;
+      input.value = Math.min(Number(input.max), Math.max(0, quantity + delta));
+      updateOrder();
+    });
+    return button;
+  });
   input.addEventListener("input", updateOrder);
-  return { id, name, input, row, decrease, increase };
-});
-
-function orderQuantities() {
-  return quantityControls.map(({ name, input }) => ({
-    name,
-    quantity: input.validity.valid ? input.valueAsNumber || 0 : 0
-  }));
+  controls.append(buttons[0], input, buttons[1]);
+  row.append(label, controls);
+  document.querySelector(`#${item.product}-quantities`).append(row);
+  return { ...item, input, label };
 }
 
-function totalQuantity(items) {
-  return items.reduce((total, item) => total + item.quantity, 0);
+const quantityControls = orderItems.filter(({ product }) => product !== "sauce").map(quantityControl);
+
+function selectedQuantities() {
+  const quantities = {};
+  for (const { id, input, product } of quantityControls) {
+    const amount = input.validity.valid ? input.valueAsNumber || 0 : 0;
+    quantities[id] = settings[`${product}Available`] ? amount : 0;
+  }
+  quantities.sauce = settings.sauceAvailable && orderForm.elements.sauce.checked ? 1 : 0;
+  return quantities;
 }
 
 function updateOrder() {
-  const quantity = totalQuantity(orderQuantities());
-  const amount = formatPrice(quantity * unitPrice);
+  const { chicken, meat, tuna, king, sauce } = selectedQuantities();
+  const mini = chicken + meat + tuna;
+  const total = mini * settings.miniPrice + king * settings.kingPrice + sauce * (settings.saucePrice ?? 0);
+  const amount = Number.isSafeInteger(total) ? formatPrice(total) : "—";
   const amountChanged = orderAmount.value !== amount;
-  orderCount.textContent = formatQuantity(quantity);
   orderAmount.value = amount;
-  quantityError.hidden = true;
-
+  orderError.hidden = true;
   if (amountChanged && document.body.classList.contains("motion-scrolling") &&
-    motionPreference.matches && typeof orderAmount.animate === "function") {
+      motionPreference.matches && typeof orderAmount.animate === "function") {
     amountAnimation?.cancel();
-    amountAnimation = orderAmount.animate([
-      { transform: "translateY(5px) scale(.96)", opacity: .7 },
-      { transform: "translateY(-2px) scale(1.04)", offset: .62 },
-      { transform: "none", opacity: 1 }
-    ], { duration: 420, easing: "cubic-bezier(.2, .75, .25, 1)" });
+    amountAnimation = orderAmount.animate(
+      [{ transform: "translateY(5px) scale(.96)" }, { transform: "none" }],
+      { duration: 420, easing: "cubic-bezier(.2, .75, .25, 1)" }
+    );
   }
 }
 
@@ -75,61 +91,174 @@ motionPreference.addEventListener?.("change", (event) => {
   if (!event.matches) amountAnimation?.cancel();
 });
 
-const addressInput = orderForm.elements.deliveryAddress;
-addressInput.addEventListener("input", () => addressInput.setCustomValidity(""));
+function showOrderError(message) {
+  orderError.textContent = message;
+  orderError.hidden = false;
+}
 
-orderForm.addEventListener("submit", (event) => {
+orderForm.elements.sauce.addEventListener("change", updateOrder);
+for (const input of [orderForm.elements.firstName, orderForm.elements.lastName, orderForm.elements.deliveryAddress]) {
+  input.addEventListener("input", () => input.setCustomValidity(""));
+}
+
+orderForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const items = orderQuantities();
-  const quantity = totalQuantity(items);
-  if (quantity < minimumQuantity) {
-    quantityError.textContent = `Le minimum est de ${formatQuantity(minimumQuantity)}. Il vous en manque ${minimumQuantity - quantity}.`;
-    quantityError.hidden = false;
+  if (orderSubmit.disabled || catalogRevision === null) return;
+  const quantities = selectedQuantities();
+  const mini = quantities.chicken + quantities.meat + quantities.tuna;
+  if (mini > 0 && mini < settings.miniMinimum) {
+    showOrderError(`Choisissez au moins ${settings.miniMinimum} mini pastels. Il vous en manque ${settings.miniMinimum - mini}.`);
     quantityControls[0].input.focus();
     return;
   }
-
-  const formData = new FormData(orderForm);
-  const address = formData.get("deliveryAddress").trim();
-  if (!address) {
-    addressInput.setCustomValidity("Indiquez votre quartier de livraison.");
-    addressInput.reportValidity();
+  if (!mini && !quantities.king) {
+    showOrderError("Choisissez des mini pastels ou un Pastel King. La sauce est un accompagnement.");
+    return;
+  }
+  const { firstName, lastName, deliveryAddress, deliveryDay } = orderForm.elements;
+  for (const field of [firstName, lastName, deliveryAddress]) {
+    if (field.value.trim()) continue;
+    field.setCustomValidity("Veuillez renseigner ce champ.");
+    field.reportValidity();
+    return;
+  }
+  if (orderAmount.value === "—") {
+    showOrderError("La quantité totale dépasse celle que le formulaire peut traiter.");
     return;
   }
 
-  const customerName = formData.get("customerName").trim();
-  const message = [
-    "Bonjour Mara Pastel, je souhaite commander :",
-    ...items.filter(({ quantity }) => quantity > 0).map(({ name, quantity }) => `– ${name} : ${quantity}`),
-    "",
-    `Total des pastels : ${formatQuantity(quantity)} — ${formatPrice(quantity * unitPrice)}`,
-    "Frais de livraison à confirmer.",
-    `Jour de livraison souhaité : ${formData.get("deliveryDay")}`,
-    `Adresse de livraison : ${address}`
-  ];
-  if (customerName) message.push(`Nom : ${customerName}`);
-  window.location.assign(whatsappUrl(message.join("\n")));
+  const payload = {
+    p_revision: catalogRevision,
+    p_first_name: firstName.value.trim(),
+    p_last_name: lastName.value.trim(),
+    p_address: deliveryAddress.value.trim(),
+    p_delivery_day: deliveryDay.value,
+    p_quantities: quantities
+  };
+  const fingerprint = JSON.stringify(payload);
+  if (attempt?.fingerprint !== fingerprint) attempt = { fingerprint, id: crypto.randomUUID() };
+  orderFields.disabled = true;
+  orderSubmit.disabled = true;
+  orderSubmit.lastChild.textContent = " Enregistrement…";
+  orderError.hidden = true;
+  try {
+    const saved = await maraRequest("/rest/v1/rpc/mara_submit_order", {
+      method: "POST",
+      body: { ...payload, p_request_id: attempt.id }
+    });
+    if (!saved?.reference || !Array.isArray(saved.items) || !Number.isSafeInteger(saved.subtotal_gnf)) {
+      throw new Error("Réponse de commande incomplète");
+    }
+    const message = [
+      `Bonjour Mara Pastel, voici ma demande ${saved.reference} :`,
+      ...saved.items.map((item) => `– ${item.name} × ${item.quantity}${item.unit_price === null ? " (prix à confirmer)" : ""}`),
+      "",
+      `Sous-total des produits : ${formatPrice(saved.subtotal_gnf)}`,
+      ...(saved.sauce_pending ? ["Prix de la sauce à confirmer."] : []),
+      "Frais de livraison à confirmer.",
+      `Jour de livraison souhaité : ${payload.p_delivery_day}`,
+      `Client : ${payload.p_first_name} ${payload.p_last_name}`,
+      `Adresse : ${payload.p_address}`
+    ];
+    orderWhatsApp.href = whatsappUrl(message.join("\n"));
+    document.querySelector("#order-success-text").textContent =
+      `Référence ${saved.reference}. Envoyez le message dans WhatsApp pour que Mara Pastel confirme votre commande.`;
+    orderFields.hidden = true;
+    orderSuccess.hidden = false;
+    orderWhatsApp.focus();
+    window.location.assign(orderWhatsApp.href);
+  } catch (error) {
+    showOrderError(error.status === 409
+      ? "Le menu a changé. Rechargez la page pour afficher les nouveaux prix avant de commander."
+      : "La demande n’a pas pu être enregistrée. Réessayez avant d’ouvrir WhatsApp.");
+  } finally {
+    orderFields.disabled = false;
+    orderSubmit.disabled = false;
+    orderSubmit.lastChild.textContent = " Enregistrer et ouvrir WhatsApp";
+  }
 });
 
-const defaultMessage = "Bonjour Mara Pastel, je souhaite passer commande.";
-document.querySelectorAll('a[href^="https://wa.me/"]').forEach((link) => {
-  link.href = whatsappUrl(defaultMessage);
+document.querySelector("#new-order").addEventListener("click", () => {
+  orderForm.reset();
+  attempt = undefined;
+  orderSuccess.hidden = true;
+  orderFields.hidden = false;
+  updateOrder();
+  orderForm.elements.firstName.focus();
 });
-const phoneLink = document.querySelector('a[href^="tel:"]');
-phoneLink.href = `tel:+${whatsappNumber}`;
-phoneLink.textContent = phoneLabel;
 
-const minimumPrice = minimumQuantity * unitPrice;
-document.querySelector('[data-price="unit"]').firstChild.textContent = priceFormatter.format(unitPrice);
-document.querySelector('[data-price="minimum"]').firstChild.textContent = priceFormatter.format(minimumPrice);
-document.querySelector("#minimum-pack").textContent =
-  `${formatQuantity(minimumQuantity)}, quantité minimale par commande.`;
-document.querySelector("#faq-minimum").textContent =
-  `Le lot minimum est de ${formatQuantity(minimumQuantity)}, soit ${formatPrice(minimumPrice)}. Le pastel coûte ${formatPrice(unitPrice)} à l’unité.`;
-document.querySelector("#order-terms").textContent =
-  `${formatPrice(unitPrice)} le pastel. Minimum de ${formatQuantity(minimumQuantity)} par commande. Frais de livraison confirmés sur WhatsApp.`;
-updateOrder();
-document.querySelector("#go").disabled = false;
+function applyOrderingSettings(next, revision) {
+  settings = next;
+  catalogRevision = Number.isSafeInteger(revision) ? revision : null;
+  orderSubmit.disabled = catalogRevision === null || (!settings.miniAvailable && !settings.kingAvailable);
+
+  for (const { id, name } of products) {
+    const card = document.querySelector(`[data-product="${id}"]`);
+    const label = card.querySelector("h3").textContent.trim() || name;
+    const rate = card.querySelector("[data-rate]");
+    const note = card.querySelector("[data-product-note]");
+    const group = document.querySelector(`[data-order-product="${id}"]`);
+    const available = settings[`${id}Available`] && (id !== "sauce" || settings.miniAvailable || settings.kingAvailable);
+    group.hidden = !available;
+    group.disabled = !available;
+    if (id === "sauce") group.querySelector("input").disabled = !available;
+
+    if (!available) {
+      rate.textContent = "Indisponible";
+    } else if (id === "mini") {
+      rate.textContent = `${formatPrice(settings.miniPrice * settings.miniMinimum)} les ${settings.miniMinimum}`;
+      note.textContent = `${settings.miniMinimum} pièces minimum. Puis ${formatPrice(settings.miniPrice)} par mini pastel supplémentaire.`;
+      group.querySelector("legend").textContent = label;
+    } else if (id === "king") {
+      rate.textContent = `${formatPrice(settings.kingPrice)} la pièce`;
+      group.querySelector("legend").textContent = label;
+      quantityControls.find(({ id }) => id === "king").label.textContent = "Nombre de pièces";
+    } else {
+      rate.textContent = settings.saucePrice === null ? "Prix confirmé sur WhatsApp" : formatPrice(settings.saucePrice);
+    }
+  }
+  document.querySelector("#mini-rule").textContent = `${settings.miniMinimum} mini pastels minimum, toutes garnitures confondues.`;
+  document.querySelector("#sauce-order-price").textContent = settings.saucePrice === null
+    ? "(prix à confirmer sur WhatsApp)" : `(${formatPrice(settings.saucePrice)})`;
+  document.querySelector("#faq-minimum").textContent =
+    `Les mini pastels se commandent par ${settings.miniMinimum} au minimum. Le Pastel King se commande à l’unité.`;
+  document.querySelectorAll("[data-setting]").forEach((entry) => {
+    const text = settings[entry.dataset.setting];
+    if (typeof text === "string") entry.textContent = text;
+  });
+  document.querySelector("#payment-info").hidden = !settings.payment;
+  for (const name of ["facebook", "tiktok"]) {
+    const listItem = document.querySelector(`#social-${name}`);
+    const url = maraSocialUrl(settings[name], `${name}.com`);
+    listItem.hidden = !url;
+    if (url) listItem.querySelector("a").href = url;
+  }
+  const defaultMessage = "Bonjour Mara Pastel, j’aimerais des renseignements.";
+  document.querySelectorAll('a[href^="https://wa.me/"]').forEach((link) => {
+    link.href = whatsappUrl(defaultMessage);
+  });
+  const phone = document.querySelector('a[href^="tel:"]');
+  phone.href = `tel:+${settings.whatsappNumber}`;
+  phone.textContent = `+${settings.whatsappNumber.replace(/^224(\d{3})(\d{2})(\d{2})(\d{2})$/, "224 $1 $2 $3 $4")}`;
+  updateOrder();
+  orderAvailability.hidden = settings.miniAvailable || settings.kingAvailable;
+  orderAvailability.textContent = "Le menu est temporairement indisponible. Contactez-nous sur WhatsApp.";
+}
+
+applyOrderingSettings(settings, null);
+if ("IntersectionObserver" in window) {
+  const blockingSections = new Set();
+  const floatingButton = document.querySelector(".fab");
+  const buttonObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) blockingSections.add(entry.target);
+      else blockingSections.delete(entry.target);
+    }
+    floatingButton.hidden = blockingSections.size > 0;
+  });
+  buttonObserver.observe(document.querySelector("#accueil"));
+  buttonObserver.observe(orderForm);
+}
 
 const menuButton = document.querySelector(".burger");
 const menu = document.querySelector("#menu");
@@ -168,6 +297,8 @@ function renderGallery(events) {
     album.className = "album";
 
     const cover = new Image();
+    cover.loading = "lazy";
+    cover.decoding = "async";
     cover.src = photos[0];
     cover.alt = "";
     const caption = document.createElement("div");
@@ -200,12 +331,7 @@ dialog.addEventListener("click", (event) => {
   if (event.target === dialog) dialog.close();
 });
 
-async function showPublishedSite() {
-  if (!maraProject) return;
-  const [published] = await maraRequest(`${maraSitePath}&select=content`);
-  const content = published?.content;
-  if (!content) return;
-
+function applySiteContent(content, revision) {
   document.querySelectorAll("[data-mara-text]").forEach((element) => {
     const text = content.texts?.[element.dataset.maraText];
     if (typeof text === "string" && text.trim()) element.textContent = text;
@@ -226,17 +352,7 @@ async function showPublishedSite() {
     image.alt = typeof source.alt === "string" ? source.alt.trim() : "";
     image.hidden = false;
   });
-  const chips = document.querySelectorAll(".chips span");
-  quantityControls.forEach((control, index) => {
-    const title = content.texts?.[`product.${control.id}.title`];
-    if (typeof title !== "string" || !title.trim()) return;
-    control.name = title;
-    control.row.querySelector("label").textContent = title;
-    control.input.setAttribute("aria-label", `Quantité de pastels — ${title}`);
-    control.decrease.setAttribute("aria-label", `Retirer un pastel — ${title}`);
-    control.increase.setAttribute("aria-label", `Ajouter un pastel — ${title}`);
-    chips[index].textContent = title;
-  });
+  applyOrderingSettings(maraSiteSettings(content.settings), revision);
 
   if (Array.isArray(content.events)) {
     const publishedEvents = content.events
@@ -247,8 +363,28 @@ async function showPublishedSite() {
   }
 }
 
+async function showPublishedSite() {
+  if (new URLSearchParams(location.search).get("apercu") === "1") {
+    try {
+      const draft = JSON.parse(sessionStorage.getItem("mara-site-preview") || "null");
+      if (draft) {
+        document.querySelector("#preview-notice").hidden = false;
+        applySiteContent(draft, null);
+        return;
+      }
+    } catch {
+      // Use the published content if the preview is missing or unavailable.
+    }
+  }
+  if (!maraProject) throw new Error("Supabase indisponible");
+  const [published] = await maraRequest(`${maraSitePath}&select=content,revision`);
+  if (!published) throw new Error("Catalogue indisponible");
+  applySiteContent(published.content, published.revision);
+}
+
 showPublishedSite().catch(() => {
-  // La vitrine conserve le contenu local si Supabase est indisponible.
+  orderAvailability.textContent = "Le formulaire est temporairement indisponible. Vous pouvez nous écrire sur WhatsApp.";
+  orderAvailability.hidden = false;
 });
 
 function prepareScrollMotion() {

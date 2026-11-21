@@ -4,19 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mara Pastel – Pastels faits maison à Kipé</title>
-<meta name="description" content="Mara Pastel prépare des pastels faits maison au poulet, au thon ou à la viande. Commandes du lundi au vendredi, livraison le week-end.">
+<meta name="description" content="Mini pastels, Pastel King et sauce maison à Kipé, Conakry. Commande sur WhatsApp, livraison le week-end.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap">
 <meta name="theme-color" content="#d4122e">
 <meta property="og:title" content="Mara Pastel – Pastels faits maison à Kipé">
-<meta property="og:description" content="Pastels au poulet, au thon ou à la viande. Commandes du lundi au vendredi, livraison le week-end.">
+<meta property="og:description" content="Mini pastels, Pastel King et sauce maison à Kipé, Conakry. Commande sur WhatsApp, livraison le week-end.">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Restaurant","name":"Mara Pastel","telephone":"+224626209791","servesCuisine":"Pastels","address":{"@type":"PostalAddress","addressLocality":"Kipé, Conakry","addressCountry":"GN"}}</script>
-<link rel="stylesheet" href="styles.css?v=3">
-<script src="content.js" defer></script>
+<link rel="stylesheet" href="styles.css?v=4">
+<script src="content.js?v=4" defer></script>
 <script src="supabase-config.js" defer></script>
-<script src="site-data.js" defer></script>
-<script src="script.js?v=3" defer></script>
+<script src="site-data.js?v=4" defer></script>
+<script src="script.js?v=4" defer></script>
 </head>
 <body class="storefront">
+<p class="preview-notice" id="preview-notice" hidden>Aperçu du brouillon administrateur</p>
 <svg width="0" height="0" class="icon-definitions" aria-hidden="true"><defs>
 <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
 <symbol id="i-chef" viewBox="0 0 24 24"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/><path d="M6 17h12"/></symbol>
@@ -44,23 +45,23 @@
 <header class="wrap top">
 <a class="logo" href="#accueil" aria-label="Mara Pastel, accueil"><img src="assets/logo-mara-pastel.jpg" alt="Mara Pastel"></a>
 <nav aria-label="Navigation principale">
-<a href="#formulaire">Commander</a><a href="#tarifs">Tarifs</a><a href="#services">Services</a><a href="#apropos">À propos</a><a href="#faq">FAQ</a><a href="#galerie">Galerie</a><a href="#contact">Contact</a>
+<a href="#pastels">Menu</a><a href="#formulaire">Commander</a><a href="#services">Services</a><a href="#apropos">À propos</a><a href="#faq">FAQ</a><a href="#galerie">Galerie</a><a href="#contact">Contact</a>
 <a class="btn" href="https://wa.me/224626209791?text=Bonjour%20Mara%20Pastel%2C%20je%20souhaite%20passer%20commande.%0A%0ASource%20%3A%20site%20Mara%20Pastel" rel="noopener"><svg class="ic"><use href="#i-chat"/></svg>WhatsApp</a>
 </nav>
 <button class="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu"><svg class="ic" viewBox="0 0 24 24"><path class="o" d="M4 7h16M4 12h16M4 17h16"/><path class="c" d="M6 6l12 12M18 6 6 18"/></svg></button>
-<div class="menu" id="menu" hidden><a href="#formulaire">Commander</a><a href="#tarifs">Tarifs</a><a href="#services">Services</a><a href="#apropos">À propos</a><a href="#faq">FAQ</a><a href="#galerie">Galerie</a><a href="#contact">Contact</a></div>
+<div class="menu" id="menu" hidden><a href="#pastels">Menu</a><a href="#formulaire">Commander</a><a href="#services">Services</a><a href="#apropos">À propos</a><a href="#faq">FAQ</a><a href="#galerie">Galerie</a><a href="#contact">Contact</a></div>
 </header>
 <div class="wrap hero-body">
 <h1 data-mara-text="hero.title">La saveur qui rassemble</h1>
-<p class="lead" data-mara-text="hero.body">Mara Pastel prépare des pastels faits maison, farcis au poulet, au thon ou à la viande. Pour un repas à emporter comme pour un événement, nous livrons votre commande.</p>
+<p class="lead" data-mara-text="hero.body">Des mini pastels faits maison, un Pastel King grand format et notre sauce maison. Commandez sur WhatsApp et faites-vous livrer le week-end à Conakry.</p>
 <div class="actions">
-<a class="btn" href="https://wa.me/224626209791?text=Bonjour%20Mara%20Pastel%2C%20je%20souhaite%20passer%20commande.%0A%0ASource%20%3A%20site%20Mara%20Pastel" rel="noopener"><svg class="ic"><use href="#i-chat"/></svg>Commander sur WhatsApp</a>
-<a class="btn ghost" href="#tarifs">Voir les tarifs</a>
+<a class="btn" href="#formulaire"><svg class="ic"><use href="#i-chat"/></svg>Préparer ma commande</a>
+<a class="btn ghost" href="#pastels">Voir le menu</a>
 </div>
 <ul class="facts">
-<li><svg class="ic"><use href="#i-cal"/></svg>Commandes du lundi au vendredi</li>
-<li><svg class="ic"><use href="#i-truck"/></svg>Livraison le week-end</li>
-<li><svg class="ic"><use href="#i-pin"/></svg>Kipé, Conakry</li>
+<li><svg class="ic"><use href="#i-cal"/></svg><span>Commandes <span data-setting="orderHours">du lundi au vendredi</span></span></li>
+<li><svg class="ic"><use href="#i-truck"/></svg><span>Livraison <span data-setting="deliveryHours">le week-end</span></span></li>
+<li><svg class="ic"><use href="#i-pin"/></svg><span data-setting="deliveryArea">Kipé, Conakry</span></li>
 </ul>
 </div>
 </section>
@@ -69,67 +70,73 @@
 <section class="s" id="commande"><div class="wrap">
 <div class="head"><h2>Comment commander</h2><p>Une organisation simple pour que chaque commande arrive fraîche.</p></div>
 <div class="grid c3">
-<article class="card"><span class="tile"><svg class="ic"><use href="#i-cal"/></svg></span><h3>Du lundi au vendredi</h3><p>Vous passez commande. Nous l’enregistrons.</p><small>Étape 1</small></article>
-<article class="card"><span class="tile"><svg class="ic"><use href="#i-chef"/></svg></span><h3>Samedi et dimanche</h3><p>Vos pastels sont préparés.</p><small>Étape 2</small></article>
-<article class="card"><span class="tile"><svg class="ic"><use href="#i-truck"/></svg></span><h3>Samedi et dimanche</h3><p>Nous livrons votre commande.</p><small>Étape 3</small></article>
+<article class="card"><span class="tile"><svg class="ic"><use href="#i-cal"/></svg></span><h3>Préparer votre demande</h3><p>Choisissez vos pastels et renseignez votre adresse de livraison.</p><small>Étape 1</small></article>
+<article class="card"><span class="tile"><svg class="ic"><use href="#i-chef"/></svg></span><h3>Envoyer sur WhatsApp</h3><p>Envoyez le message préparé. Mara Pastel vous confirme la demande.</p><small>Étape 2</small></article>
+<article class="card"><span class="tile"><svg class="ic"><use href="#i-truck"/></svg></span><h3>Recevoir vos pastels</h3><p>Nous préparons et livrons vos pastels le jour convenu ensemble.</p><small>Étape 3</small></article>
 </div>
 </div></section>
 
 <section class="s alt" id="pastels"><div class="wrap">
-<div class="head"><h2>Nos pastels</h2><p>Trois garnitures, une même pâte croustillante faite maison.</p></div>
+<div class="head"><h2>Nos pastels</h2><p>Mini pastels, Pastel King et sauce maison.</p></div>
 <div class="grid c3">
-<article class="card"><div class="shot"><svg class="ic"><use href="#i-chef"/></svg><img data-mara-image="product.poulet" alt="" hidden loading="lazy"></div><h3 data-mara-text="product.poulet.title">Poulet</h3><p data-mara-text="product.poulet.body">Pastel fait maison, farci au poulet.</p></article>
-<article class="card"><div class="shot"><svg class="ic"><use href="#i-chef"/></svg><img data-mara-image="product.thon" alt="" hidden loading="lazy"></div><h3 data-mara-text="product.thon.title">Thon</h3><p data-mara-text="product.thon.body">Pastel fait maison, farci au thon.</p></article>
-<article class="card"><div class="shot"><svg class="ic"><use href="#i-chef"/></svg><img data-mara-image="product.viande" alt="" hidden loading="lazy"></div><h3 data-mara-text="product.viande.title">Viande</h3><p data-mara-text="product.viande.body">Pastel fait maison, farci à la viande.</p></article>
+<article class="card" data-product="mini"><div class="shot"><svg class="ic" aria-hidden="true"><use href="#i-chef"/></svg><img data-mara-image="product.poulet" alt="" hidden loading="lazy" decoding="async"></div><h3 data-mara-text="product.mini.title">Mini pastels</h3><p data-mara-text="product.mini.body">De petits pastels faits maison, au poulet, à la viande ou au thon.</p><p class="product-rate" data-rate="mini">30 000 GNF les 6</p><p class="product-note" data-product-note="mini">6 pièces minimum. 5 000 GNF par mini pastel supplémentaire.</p></article>
+<article class="card" data-product="king"><div class="shot"><svg class="ic" aria-hidden="true"><use href="#i-chef"/></svg><img data-mara-image="product.thon" alt="" hidden loading="lazy" decoding="async"></div><h3 data-mara-text="product.king.title">Pastel King</h3><p data-mara-text="product.king.body">Un grand pastel fait maison, proposé à l’unité.</p><p class="product-rate" data-rate="king">40 000 GNF la pièce</p><p class="product-note" data-product-note="king">À partir d’une pièce.</p></article>
+<article class="card" data-product="sauce"><div class="shot"><svg class="ic" aria-hidden="true"><use href="#i-chef"/></svg><img data-mara-image="product.viande" alt="" hidden loading="lazy" decoding="async"></div><h3 data-mara-text="product.sauce.title">La sauce magique</h3><p data-mara-text="product.sauce.body">Notre sauce maison, en accompagnement de vos pastels.</p><p class="product-rate" data-rate="sauce">Prix confirmé sur WhatsApp</p><p class="product-note" data-product-note="sauce">En accompagnement d’une commande de pastels.</p></article>
 </div></div></section>
-<section class="s" id="tarifs"><div class="wrap">
-<div class="head"><h2>Tarifs</h2><p>Des pastels croustillants, au prix affiché, sans surprise.</p></div>
-<div class="grid c2">
-<article class="card price"><h3>À l’unité</h3><div class="amt" data-price="unit">5&nbsp;000<span>GNF</span></div><p>Poulet, thon ou viande.</p></article>
-<article class="card price hot"><h3>Lot minimum</h3><div class="amt" data-price="minimum">30&nbsp;000<span>GNF</span></div><p id="minimum-pack">6 pastels, quantité minimale par commande.</p></article>
-</div>
-<p class="lbl">Garnitures au choix</p>
-<div class="chips" aria-label="Garnitures"><span>Poulet</span><span>Thon</span><span>Viande</span></div>
-</div></section>
 
-<section class="s alt" id="formulaire"><div class="wrap">
-<div class="head"><h2>Passer commande</h2><p>Choisissez vos pastels. Votre commande part sur WhatsApp, déjà rédigée.</p></div>
-<form class="order card" id="order-form">
-<div class="line" data-filling="poulet"><label for="quantity-poulet">Poulet</label><div class="qty"><button type="button" aria-label="Retirer un pastel au poulet">−</button><input id="quantity-poulet" type="number" inputmode="numeric" min="0" max="99" step="1" value="0" aria-label="Quantité de pastels — Poulet"><button type="button" aria-label="Ajouter un pastel au poulet">+</button></div></div>
-<div class="line" data-filling="thon"><label for="quantity-thon">Thon</label><div class="qty"><button type="button" aria-label="Retirer un pastel au thon">−</button><input id="quantity-thon" type="number" inputmode="numeric" min="0" max="99" step="1" value="0" aria-label="Quantité de pastels — Thon"><button type="button" aria-label="Ajouter un pastel au thon">+</button></div></div>
-<div class="line" data-filling="viande"><label for="quantity-viande">Viande</label><div class="qty"><button type="button" aria-label="Retirer un pastel à la viande">−</button><input id="quantity-viande" type="number" inputmode="numeric" min="0" max="99" step="1" value="0" aria-label="Quantité de pastels — Viande"><button type="button" aria-label="Ajouter un pastel à la viande">+</button></div></div>
-<label class="fld">Jour de livraison<select id="oj" name="deliveryDay" required><option>Samedi</option><option>Dimanche</option></select></label>
-<label class="fld">Votre nom<input id="on" name="customerName" autocomplete="name" maxlength="100"></label>
-<label class="fld">Adresse de livraison<input id="oa" name="deliveryAddress" placeholder="Quartier, point de repère" autocomplete="street-address" maxlength="250" required></label>
-<div class="tot"><span id="np">0 pastel</span><output id="pr" aria-label="Total des pastels">0 GNF</output></div>
+<section class="s" id="formulaire"><div class="wrap">
+<div class="head"><h2>Préparer ma commande</h2><p>Nous enregistrons votre demande, puis vous envoyez le message préparé sur WhatsApp.</p></div>
+<form class="order card" id="order-form" method="post">
+<fieldset id="order-fields">
+<legend class="sr-only">Votre commande</legend>
+<fieldset class="order-group" data-order-product="mini"><legend>Mini pastels</legend>
+<p class="order-hint" id="mini-rule">6 pièces minimum, garnitures au choix.</p>
+<div id="mini-quantities"></div>
+</fieldset>
+<fieldset class="order-group" data-order-product="king"><legend>Pastel King</legend><div id="king-quantities"></div></fieldset>
+<label class="order-sauce" data-order-product="sauce"><input name="sauce" type="checkbox"> Ajouter la sauce magique <span id="sauce-order-price"></span></label>
+<div class="grid c2 order-customer">
+<label class="fld">Prénom<input name="firstName" autocomplete="given-name" maxlength="80" required></label>
+<label class="fld">Nom<input name="lastName" autocomplete="family-name" maxlength="80" required></label>
+</div>
+<label class="fld">Jour de livraison <select name="deliveryDay" required><option>Samedi</option><option>Dimanche</option></select></label>
+<label class="fld">Adresse de livraison <textarea name="deliveryAddress" placeholder="Quartier, point de repère" autocomplete="street-address" maxlength="250" rows="2" required></textarea></label>
+<div class="tot"><span>Sous-total des produits</span><output id="pr" aria-live="polite">0 GNF</output></div>
+<p id="order-terms">Frais de livraison confirmés sur WhatsApp. Mara Pastel vous confirme la commande après réception de votre message.</p>
+<p class="order-hint">Votre nom et votre adresse servent à traiter la demande. <a href="confidentialite.html">Confidentialité</a></p>
+<p class="order-hint" id="order-availability" role="status" hidden></p>
 <p class="err" id="er" role="alert" hidden></p>
-<p id="order-terms">5 000 GNF le pastel. Minimum de 6 pastels par commande. Frais de livraison confirmés sur WhatsApp.</p>
-<button class="btn" id="go" type="submit" aria-describedby="order-terms" disabled><svg class="ic"><use href="#i-chat"/></svg>Envoyer sur WhatsApp</button>
+<button class="btn" id="go" type="submit" aria-describedby="order-terms" disabled><svg class="ic"><use href="#i-chat"/></svg>Enregistrer et ouvrir WhatsApp</button>
+</fieldset>
+<div class="order-success" id="order-success" hidden>
+<h3>Demande enregistrée</h3><p id="order-success-text" role="status"></p>
+<a class="btn" id="order-whatsapp">Ouvrir WhatsApp</a>
+<button class="btn order-new" id="new-order" type="button">Nouvelle demande</button>
+</div>
 </form></div></section>
 <section class="s" id="services"><div class="wrap">
 <div class="head"><h2>Nos services</h2><p>Du simple repas aux grandes occasions.</p></div>
 <div class="grid c3">
-<article class="card"><span class="tile"><svg class="ic"><use href="#i-home"/></svg></span><h3>Pastels faits maison</h3><p>Préparés à la commande, au poulet, au thon ou à la viande.</p></article>
+<article class="card"><span class="tile"><svg class="ic"><use href="#i-home"/></svg></span><h3>Pastels faits maison</h3><p>Mini pastels et Pastel King préparés à la commande.</p></article>
 <article class="card"><span class="tile"><svg class="ic"><use href="#i-users"/></svg></span><h3>Commandes événementielles</h3><p>Pour vos fêtes, réunions et événements.</p></article>
 <article class="card"><span class="tile"><svg class="ic"><use href="#i-fork"/></svg></span><h3>Service traiteur</h3><p>Des pastels pour vos réceptions.</p></article>
-<article class="card"><span class="tile"><svg class="ic"><use href="#i-bag"/></svg></span><h3>Vente à emporter</h3><p>Commandez et emportez vos pastels.</p></article>
-<article class="card"><span class="tile"><svg class="ic"><use href="#i-bolt"/></svg></span><h3>Livraison rapide</h3><p>Livrée le samedi ou le dimanche, juste après la préparation.</p></article>
+<article class="card"><span class="tile"><svg class="ic"><use href="#i-bolt"/></svg></span><h3>Livraison rapide</h3><p>Livraison à l’adresse confirmée avec vous sur WhatsApp.</p></article>
 </div>
 </div></section>
 
 <section class="s alt" id="apropos"><div class="wrap"><div class="about">
 <figure><img data-mara-image="story" src="assets/mara-evenement.webp" alt="Le vendeur de Mara Pastel sur son stand lors d’un événement"></figure>
-<div><h2 data-mara-text="story.title">Notre histoire</h2><p data-mara-text="story.intro">Mara Pastel est une marque de restauration snacking spécialisée dans les pastels. Chaque pastel est fait maison, farci au poulet, au thon ou à la viande, puis livré chez vous.</p><p data-mara-text="story.body">Notre ambition est simple : partager une saveur qui rassemble, du repas entre amis aux grands événements. Nous sommes installés à Kipé, à Conakry.</p></div>
+<div><h2 data-mara-text="story.title">Notre histoire</h2><p data-mara-text="story.intro">Mara Pastel prépare des pastels faits maison à Kipé. Notre carte réunit des mini pastels, le Pastel King et notre sauce maison.</p><p data-mara-text="story.body">Notre ambition est de partager une saveur qui rassemble, du repas entre amis aux grands événements. Nous sommes installés à Kipé, à Conakry.</p></div>
 </div></div></section>
 <section class="s" id="faq"><div class="wrap">
 <div class="head"><h2>Questions fréquentes</h2></div>
 <div class="faq">
-<details><summary>Comment passer commande ?</summary><p>Du lundi au vendredi, avec le formulaire ci-dessus ou directement sur WhatsApp au +224 626 20 97 91. Nous enregistrons votre commande.</p></details>
-<details><summary>Quand mes pastels sont-ils préparés et livrés ?</summary><p>Les pastels sont préparés le samedi et le dimanche, puis livrés ces mêmes jours.</p></details>
-<details><summary>Quelle quantité minimale commander ?</summary><p id="faq-minimum">Le lot minimum est de 6 pastels, soit 30 000 GNF. Le pastel coûte 5 000 GNF à l’unité.</p></details>
-<details><summary>Quelles garnitures proposez-vous ?</summary><p>Poulet, thon ou viande. Vous pouvez mélanger les garnitures dans une même commande.</p></details>
-<details><summary>Faites-vous des commandes pour des événements ?</summary><p>Oui, nous prenons les commandes événementielles et proposons un service traiteur. Écrivez-nous sur WhatsApp avec la date et la quantité souhaitées.</p></details>
-<details><summary>Livrez-vous dans mon quartier ?</summary><p>Indiquez votre quartier dans votre commande. Nous vous confirmons la livraison sur WhatsApp.</p></details>
+<details><summary>Comment passer commande ?</summary><p>Les demandes sont prises <span data-setting="orderHours">du lundi au vendredi</span>. Préparez la vôtre avec le formulaire, puis envoyez le message WhatsApp.</p></details>
+<details><summary>Quand mes pastels sont-ils préparés et livrés ?</summary><p>Les livraisons ont lieu <span data-setting="deliveryHours">le week-end</span>. La commande et les frais de livraison sont confirmés sur WhatsApp.</p></details>
+<details><summary>Quelle quantité minimale commander ?</summary><p id="faq-minimum">Les mini pastels se commandent par 6 au minimum. Le Pastel King se commande à l’unité.</p></details>
+<details><summary>Quelles garnitures proposez-vous ?</summary><p data-mara-text="faq.fillings">Les mini pastels sont proposés au poulet, à la viande ou au thon. Vous pouvez mélanger les garnitures dans une même commande.</p></details>
+<details><summary>Faites-vous des commandes pour des événements ?</summary><p data-mara-text="faq.events">Pour une fête, une réunion ou une réception, contactez-nous sur WhatsApp avec la date et le nombre de personnes.</p></details>
+<details><summary>Livrez-vous dans mon quartier ?</summary><p data-mara-text="faq.delivery">Indiquez votre quartier dans le formulaire. Nous confirmons la livraison et ses frais sur WhatsApp.</p></details>
 </div></div></section>
 <section class="s alt" id="galerie" hidden><div class="wrap">
 <div class="head"><h2>Galerie</h2><p>Mara Pastel en images, événement par événement.</p></div>
@@ -139,8 +146,8 @@
 
 <section class="s" id="contact"><div class="wrap">
 <div class="cta">
-<div><h2>Une commande à passer ?</h2><p>Écrivez-nous sur WhatsApp du lundi au vendredi. Nous préparons et livrons le week-end.</p></div>
-<a class="btn light" href="https://wa.me/224626209791?text=Bonjour%20Mara%20Pastel%2C%20je%20souhaite%20passer%20commande.%0A%0ASource%20%3A%20site%20Mara%20Pastel" rel="noopener"><svg class="ic"><use href="#i-chat"/></svg>Commander</a>
+<div><h2>Une commande à passer ?</h2><p>Une question sur la livraison ou une commande événementielle ? Écrivez-nous sur WhatsApp.</p><p id="payment-info" hidden><strong>Paiement :</strong> <span data-setting="payment"></span></p></div>
+<a class="btn light" href="https://wa.me/224626209791?text=Bonjour%20Mara%20Pastel%2C%20je%20souhaite%20passer%20commande.%0A%0ASource%20%3A%20site%20Mara%20Pastel" rel="noopener"><svg class="ic"><use href="#i-chat"/></svg>Écrire sur WhatsApp</a>
 </div>
 </div></section>
 </main>
@@ -149,19 +156,19 @@
 <div class="wrap">
 <div class="cols">
 <div><a class="logo" href="#accueil" aria-label="Mara Pastel, accueil"><img src="assets/logo-mara-pastel.jpg" alt="Mara Pastel"></a><p class="tag">La saveur qui rassemble. Pastels faits maison à Kipé.</p></div>
-<div><h4>Navigation</h4><ul><li><a href="#commande">Comment commander</a></li><li><a href="#tarifs">Tarifs</a></li><li><a href="#services">Services</a></li><li><a href="#apropos">À propos</a></li><li><a href="#faq">FAQ</a></li><li><a href="#galerie">Galerie</a></li></ul></div>
+<div><h4>Navigation</h4><ul><li><a href="#commande">Comment commander</a></li><li><a href="#pastels">Nos pastels</a></li><li><a href="#services">Services</a></li><li><a href="#apropos">À propos</a></li><li><a href="#faq">FAQ</a></li><li><a href="#galerie">Galerie</a></li></ul></div>
 <div><h4>Contact</h4><ul>
 <li><svg class="ic"><use href="#i-phone"/></svg><a href="tel:+224626209791">+224 626 20 97 91</a></li>
-<li><svg class="ic"><use href="#i-pin"/></svg>Kipé, Conakry</li>
-<li><svg class="ic"><use href="#i-clock"/></svg>Commandes du lundi au vendredi</li>
-<li><svg class="ic bi"><use href="#i-fb"/></svg>Mara Pastel sur Facebook</li>
-<li><svg class="ic bi"><use href="#i-tt"/></svg>Mara Pastel sur TikTok</li>
+<li><svg class="ic"><use href="#i-pin"/></svg><span data-setting="deliveryArea">Kipé, Conakry</span></li>
+<li><svg class="ic"><use href="#i-clock"/></svg><span data-setting="orderHours">Du lundi au vendredi</span></li>
+<li id="social-facebook" hidden><svg class="ic bi"><use href="#i-fb"/></svg><a>Facebook</a></li>
+<li id="social-tiktok" hidden><svg class="ic bi"><use href="#i-tt"/></svg><a>TikTok</a></li>
 </ul></div>
 </div>
-<p class="legal">© 2026 Mara Pastel. Tous droits réservés.</p>
+<p class="legal">© 2026 Mara Pastel · <a href="confidentialite.html">Confidentialité</a></p>
 </div>
 </footer>
-<a class="btn fab" href="https://wa.me/224626209791?text=Bonjour%20Mara%20Pastel%2C%20je%20souhaite%20passer%20commande.%0A%0ASource%20%3A%20site%20Mara%20Pastel" rel="noopener" aria-label="Commander sur WhatsApp"><svg class="ic"><use href="#i-chat"/></svg>Commander</a>
-<dialog id="dlg"><button class="btn close" id="x" type="button">Fermer</button><h3 id="dt"></h3><p id="dm"></p><div class="pics" id="dp"></div></dialog>
+<a class="btn fab" href="#formulaire" aria-label="Préparer ma commande"><svg class="ic"><use href="#i-chat"/></svg>Commander</a>
+<dialog id="dlg" aria-labelledby="dt"><button class="btn close" id="x" type="button">Fermer</button><h3 id="dt"></h3><p id="dm"></p><div class="pics" id="dp"></div></dialog>
 </body>
 </html>

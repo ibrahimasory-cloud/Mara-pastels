@@ -8,12 +8,13 @@
   <meta name="theme-color" content="#d4122e">
   <title>Administration – Mara Pastel</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap">
-  <link rel="stylesheet" href="../styles.css">
-  <link rel="stylesheet" href="admin.css">
-  <script src="../content.js" defer></script>
+  <link rel="stylesheet" href="../styles.css?v=4">
+  <link rel="stylesheet" href="admin.css?v=4">
+  <script src="../content.js?v=4" defer></script>
   <script src="../supabase-config.js" defer></script>
-  <script src="../site-data.js" defer></script>
-  <script src="admin.js" defer></script>
+  <script src="../site-data.js?v=4" defer></script>
+  <script src="admin.js?v=4" defer></script>
+  <script src="orders.js" defer></script>
 </head>
 <body>
   <header class="hero admin-hero">
@@ -45,10 +46,27 @@
 
     <div id="dashboard" hidden>
       <nav class="wrap admin-nav" aria-label="Administration">
+        <a href="#demandes">Demandes de commande</a>
         <a href="#messages">Messages WhatsApp</a>
         <a href="#contenu">Textes et photos</a>
+        <a href="#reglages">Réglages</a>
         <a href="#evenements">Galerie</a>
       </nav>
+
+      <section class="s alt" id="demandes">
+        <div class="wrap">
+          <div class="admin-section-header">
+            <div><h2>Demandes de commande</h2><p>Les demandes du formulaire attendent votre confirmation sur WhatsApp.</p></div>
+            <div class="order-admin-actions">
+              <button class="btn admin-secondary" type="button" id="refresh-orders">Actualiser</button>
+              <button class="btn" type="button" id="export-orders" disabled>Exporter en PDF</button>
+            </div>
+          </div>
+          <p class="admin-status" id="orders-status" role="status"></p>
+          <ul class="inbox-list" id="orders-list"></ul>
+          <button class="btn admin-secondary" id="more-orders" type="button" hidden>Demandes précédentes</button>
+        </div>
+      </section>
 
       <section class="s" id="messages">
         <div class="wrap">
@@ -66,6 +84,16 @@
         <div class="wrap">
           <div class="head"><h2>Textes et photos</h2><p>Les changements apparaissent sur la vitrine après publication.</p></div>
           <div class="grid c2" id="editors"></div>
+        </div>
+      </section>
+
+      <section class="s" id="reglages">
+        <div class="wrap">
+          <div class="admin-section-header">
+            <div><h2>Réglages du site</h2><p>Tarifs, disponibilité et informations pratiques.</p></div>
+            <button class="btn admin-secondary" id="backup-content" type="button">Sauvegarder le contenu</button>
+          </div>
+          <div class="grid c2" id="site-settings"></div>
         </div>
       </section>
 
@@ -107,10 +135,12 @@
       <div class="admin-publish">
         <div class="wrap">
           <p class="admin-status" role="status" id="publish-status"></p>
+          <button class="btn admin-secondary" id="preview-draft" type="button">Prévisualiser</button>
           <button class="btn" id="publish" type="button" disabled>Publier sur la vitrine</button>
         </div>
       </div>
     </div>
   </main>
+  <section id="orders-print" aria-label="Export des demandes" hidden></section>
 </body>
 </html>

@@ -15,6 +15,14 @@ Après connexion, ouvrir **Paramètres du compte** en bas de `/admin`. Saisir l�
 
 Dans les réglages **Authentication → Sign In / Providers → Email** du projet Supabase, activer **Require current password when changing password** pour que Supabase exige aussi l’ancien mot de passe lorsque son API est appelée directement. [Documentation Supabase](https://supabase.com/docs/guides/auth/password-security#require-current-password-when-changing-password)
 
+## Enregistrer et exporter les demandes
+
+Avant de déployer la nouvelle vitrine, exécuter la migration [202611210001_mara_orders.sql](supabase/migrations/202611210001_mara_orders.sql) dans le SQL Editor Supabase, après la migration d’administration. Elle crée la table privée `mara_orders` et la fonction de dépôt des demandes. Le site ouvre WhatsApp après confirmation de l’enregistrement par Supabase. Une demande enregistrée reste en attente jusqu’à sa confirmation par Mara Pastel.
+
+Dans **Demandes de commande**, tu peux actualiser la liste, changer le statut et exporter toutes les demandes. Le bouton **Exporter en PDF** ouvre la fenêtre d’impression. Choisis **Enregistrer au format PDF** pour télécharger le document.
+
+Dans **Réglages**, tu peux modifier les prix, disponibilités, horaires, zones, moyens de paiement et liens sociaux. Les horaires saisis sont affichés sur la vitrine. Les brouillons sont restaurés sur le même navigateur pour la même révision publiée. **Prévisualiser** ouvre la vitrine dans un nouvel onglet avec le brouillon et le dépôt de commande désactivé. **Sauvegarder le contenu** télécharge le texte et les références des médias. La sauvegarde Supabase et la copie des fichiers photo restent nécessaires pour une restauration complète.
+
 ## Activer la réception des messages WhatsApp
 
 Le numéro indiqué dans [content.js](content.js) doit être rattaché à **WhatsApp Business Platform Cloud API** et au compte Meta qui envoie les notifications. Le numéro de la vitrine est utilisé pour la redirection WhatsApp, tandis que Meta fournit un **Phone Number ID** distinct.

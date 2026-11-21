@@ -13,6 +13,7 @@ const savePassword = document.querySelector("#save-password");
 const closePassword = document.querySelector("#close-password");
 const editors = document.querySelector("#editors");
 const eventEditors = document.querySelector("#event-editors");
+const siteSettings = document.querySelector("#site-settings");
 const addEventButton = document.querySelector("#add-event");
 const publishButton = document.querySelector("#publish");
 const publishStatus = document.querySelector("#publish-status");
@@ -56,7 +57,7 @@ function field(label, value, change, { type = "text", max = 100, multiline = fal
   if (multiline) input.rows = 3;
   else input.type = type;
   input.maxLength = max;
-  input.value = value || "";
+  input.value = value ?? "";
   input.addEventListener("input", () => {
     change(input.value);
     markDirty();
@@ -72,8 +73,31 @@ function updatePublishButton() {
 
 function markDirty() {
   dirty = true;
-  status(publishStatus, "Modifications à publier.");
+  const stored = saveDraft();
+  status(publishStatus, stored ? "Brouillon enregistré sur cet appareil." : "Modifications à publier.");
   updatePublishButton();
+}
+
+function draftStorageKey() {
+  return `mara-draft:${maraProject}:${session.userId}:${revision}`;
+}
+
+function saveDraft() {
+  try {
+    localStorage.setItem(draftStorageKey(), JSON.stringify(draft));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function storedDraft() {
+  try {
+    const value = JSON.parse(localStorage.getItem(draftStorageKey()));
+    return value?.texts && value.images && Array.isArray(value.events) ? value : null;
+  } catch {
+    return null;
+  }
 }
 
 function applySession(auth, target = {}) {
@@ -124,6 +148,8 @@ function disconnect(message) {
   inboxList.replaceChildren();
   editors.replaceChildren();
   eventEditors.replaceChildren();
+  siteSettings.replaceChildren();
+  clearOrders();
   status(loginStatus, message);
   return token;
 }
@@ -154,17 +180,20 @@ loginForm.addEventListener("submit", async (event) => {
     }
     const [site] = await adminRequest(`${maraSitePath}&select=content,revision`);
     if (!site) throw new Error("Configuration absente.");
-    draft = { texts: {}, images: {}, events: [], ...site.content };
     revision = site.revision;
-    dirty = false;
+    const local = storedDraft();
+    draft = { texts: {}, images: {}, events: [], ...site.content, ...local };
+    draft.settings = { ...maraSiteSettings(site.content.settings), ...local?.settings };
+    dirty = Boolean(local);
     renderEditors();
     renderEvents();
-    status(publishStatus, "");
+    renderSettings();
+    status(publishStatus, dirty ? "Brouillon précédent restauré." : "");
     updatePublishButton();
     loginPanel.hidden = true;
     dashboard.hidden = false;
     logoutButton.hidden = false;
-    await loadInbox();
+    await Promise.all([loadInbox(), loadOrders()]);
   } catch (error) {
     disconnect(error.status === 400 || error.status === 401
       ? "Adresse e-mail ou mot de passe incorrect."
@@ -318,6 +347,7 @@ function renderEditors() {
         max, multiline: max > 100
       }));
     }
+    if (!image) return card;
     const preview = node("img", "", "editor-photo");
     preview.alt = "Aperçu de la photo";
     const altField = field("Description de la photo", draft.images[image]?.alt, (value) => {
@@ -416,12 +446,13 @@ addEventButton.addEventListener("click", () => {
 });
 
 publishButton.addEventListener("click", async () => {
+  if (!validateSettings()) return;
   if (draft.events.some((event) => !event.nom.trim() || !event.photos.length)) {
     status(publishStatus, "Chaque événement doit avoir un nom et au moins une photo.", true);
     return;
   }
   publishing = true;
-  editors.inert = eventEditors.inert = true;
+  editors.inert = eventEditors.inert = siteSettings.inert = true;
   addEventButton.disabled = true;
   updatePublishButton();
   status(publishStatus, "Publication en cours…");
@@ -435,6 +466,7 @@ publishButton.addEventListener("click", async () => {
       status(publishStatus, "Une autre session a publié des modifications. Vos changements restent affichés. Copiez-les avant de vous reconnecter pour récupérer la dernière version.", true);
       return;
     }
+    try { localStorage.removeItem(draftStorageKey()); } catch { /* Local storage is optional. */ }
     revision = saved.revision;
     dirty = false;
     status(publishStatus, "Modifications publiées sur la vitrine.");
@@ -442,7 +474,7 @@ publishButton.addEventListener("click", async () => {
     if (!sessionError(error)) status(publishStatus, "Publication impossible. Vos modifications restent affichées.", true);
   } finally {
     publishing = false;
-    editors.inert = eventEditors.inert = false;
+    editors.inert = eventEditors.inert = siteSettings.inert = false;
     addEventButton.disabled = false;
     updatePublishButton();
   }
@@ -487,3 +519,111 @@ moreMessages.addEventListener("click", () => loadInbox(true));
 
 if (maraProject) loginForm.querySelector("button").disabled = false;
 else status(loginStatus, "La connexion sera disponible après la configuration de Supabase.");
+
+const settingsGroups = [
+  {
+    title: "Tarifs et disponibilité",
+    fields: [
+      ["miniPrice", "Prix d’un mini pastel (GNF)", "number", 1],
+      ["miniMinimum", "Nombre minimum de mini pastels", "number", 1],
+      ["miniAvailable", "Mini pastels disponibles", "checkbox"],
+      ["kingPrice", "Prix d’un Pastel King (GNF)", "number", 1],
+      ["kingAvailable", "Pastel King disponible", "checkbox"],
+      ["saucePrice", "Prix de la sauce (vide : à confirmer sur WhatsApp)", "number", 0],
+      ["sauceAvailable", "Sauce magique disponible", "checkbox"]
+    ]
+  },
+  {
+    title: "Livraison et contact",
+    fields: [
+      ["orderHours", "Horaires de commande", "text", 140],
+      ["deliveryHours", "Horaires de livraison", "text", 140],
+      ["deliveryArea", "Zone de livraison", "text", 200],
+      ["payment", "Moyens de paiement", "text", 200],
+      ["whatsappNumber", "Numéro WhatsApp avec indicatif, chiffres uniquement", "tel", 15],
+      ["facebook", "Lien Facebook", "url", 300],
+      ["tiktok", "Lien TikTok", "url", 300]
+    ]
+  }
+];
+
+function renderSettings() {
+  siteSettings.replaceChildren(...settingsGroups.map(({ title, fields }) => {
+    const card = node("article", "", "card admin-editor");
+    card.append(node("h3", title));
+    for (const [key, label, type, limit] of fields) {
+      const wrapper = node("label", type === "checkbox" ? "" : label, type === "checkbox" ? "admin-checkbox" : "fld");
+      const input = node("input");
+      input.type = type;
+      input.dataset.settingInput = key;
+      input.required = ["miniPrice", "miniMinimum", "kingPrice", "whatsappNumber", "deliveryArea", "deliveryHours", "orderHours"].includes(key);
+      if (type === "number") {
+        input.min = limit;
+        input.max = "2147483647";
+        input.step = "1";
+      } else if (type === "checkbox") {
+        input.checked = draft.settings[key];
+      } else {
+        input.maxLength = limit;
+        if (key === "whatsappNumber") input.pattern = "[0-9]{8,15}";
+      }
+      if (type !== "checkbox") input.value = draft.settings[key] ?? "";
+      input.addEventListener("input", () => {
+        input.setCustomValidity("");
+        draft.settings[key] = type === "checkbox" ? input.checked
+          : type === "number" ? (input.value === "" ? null : input.valueAsNumber)
+          : input.value.trim();
+        markDirty();
+      });
+      wrapper.append(input);
+      if (type === "checkbox") wrapper.append(" " + label);
+      card.append(wrapper);
+    }
+    return card;
+  }));
+}
+
+function validateSettings() {
+  for (const input of siteSettings.querySelectorAll("[data-setting-input]")) {
+    const key = input.dataset.settingInput;
+    if (["facebook", "tiktok"].includes(key) && input.value && !maraSocialUrl(input.value, `${key}.com`)) {
+      input.setCustomValidity(`Indiquez une adresse HTTPS sur ${key}.com.`);
+    }
+    if (input.reportValidity()) continue;
+    status(publishStatus, "Vérifiez les champs dans Réglages du site.", true);
+    return false;
+  }
+  if (!Number.isSafeInteger(draft.settings.miniPrice * draft.settings.miniMinimum)) {
+    status(publishStatus, "Le montant du lot minimum dépasse la limite du formulaire.", true);
+    return false;
+  }
+  return true;
+}
+
+document.querySelector("#preview-draft").addEventListener("click", () => {
+  if (!draft || !validateSettings()) return;
+  const tab = window.open("about:blank", "_blank");
+  if (!tab) {
+    status(publishStatus, "Autorisez l’ouverture du nouvel onglet pour prévisualiser.", true);
+    return;
+  }
+  try {
+    tab.sessionStorage.setItem("mara-site-preview", JSON.stringify(draft));
+    tab.opener = null;
+    tab.location.replace(new URL("../?apercu=1", location.href).href);
+  } catch {
+    tab.close();
+    status(publishStatus, "La prévisualisation n’a pas pu être ouverte.", true);
+  }
+});
+
+document.querySelector("#backup-content").addEventListener("click", () => {
+  if (!draft) return;
+  const blob = new Blob([JSON.stringify({ revision, content: draft }, null, 2)], { type: "application/json" });
+  const address = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = address;
+  link.download = "mara-pastel-contenu.json";
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(address), 1000);
+});

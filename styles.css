@@ -259,3 +259,37 @@ footer .cols{grid-template-columns:1.4fr 1fr 1.2fr}
     }
   }
 }
+
+.sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap; }
+.card .product-rate { margin-top:14px;color:var(--ink);font-weight:800;font-size:1.1rem; }
+.card .product-note { margin-top:4px;font-size:.92rem; }
+#order-fields, .order-group { border:0;margin:0;padding:0;min-width:0; }
+.order-group + .order-group { margin-top:20px; }
+.order-group legend { padding:0;font-weight:800;font-size:1.18rem; }
+.order-hint { margin:5px 0;color:var(--muted);font-size:.92rem; }
+.order-sauce { display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:20px;padding:12px;border:1px solid var(--line);border-radius:12px;font-weight:700; }
+.order-sauce input { width:1.1rem;height:1.1rem;accent-color:var(--red); }
+.order-sauce span { font-size:.9rem;color:var(--muted);font-weight:500; }
+.order .qty input { width:5ch; }
+.order-customer { margin-top:8px; }
+.order .fld { min-width:0; }
+.order .fld input, .order .fld select { width:100%;min-width:0; }
+.fld textarea { width:100%;min-width:0;font:inherit;font-weight:400;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);resize:vertical; }
+.order .tot { gap:12px;flex-wrap:wrap; }
+.order .order-new { background:var(--surface);color:var(--ink);border:1px solid var(--line); }
+footer .legal a { display:inline;text-decoration:underline;text-underline-offset:.2em; }
+.preview-notice { padding:8px;text-align:center;background:var(--gold);color:#18181b;font-weight:700; }
+.privacy-header { background:var(--dark);color:#fff; }
+.privacy { padding-block:48px 72px;max-width:760px; }
+.privacy h1 { font-size:clamp(2rem,5vw,3.2rem); }
+.privacy section { margin-top:28px; }
+.privacy h2 { margin-bottom:8px; }
+.privacy-note { margin-top:16px;color:var(--muted); }
+
+@media (max-width: 400px) {
+  .order .line { gap:8px; }
+  .order .qty { gap:6px; }
+  .order .qty button { width:38px;height:42px; }
+  .order .qty input { width:4ch; }
+  .order button.btn { text-align:left;max-width:100%; }
+}
