@@ -96,23 +96,40 @@ footer .cols{grid-template-columns:1.4fr 1fr 1.2fr}
 .shot { position: relative; overflow: hidden; }
 .shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
-.site-loading {
+.site-intro {
   position: fixed;
-  inset: calc(env(safe-area-inset-top, 0px) + 8px) 0 auto;
-  z-index: 22;
-  width: clamp(76px, 22vw, 144px);
-  height: 4px;
-  margin-inline: auto;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 26px;
+  background: radial-gradient(ellipse at 50% 44%, #401721, #1d1116 48%, #101012 82%);
+  pointer-events: none;
+  clip-path: inset(0);
+  transition: clip-path 460ms cubic-bezier(.65, 0, .3, 1);
+  animation: intro-expire 400ms ease 2100ms forwards;
+}
+.site-intro.is-leaving { clip-path: inset(0 0 100%); }
+.site-intro-mark {
+  display: grid;
+  place-items: center;
+  width: clamp(138px, 36vw, 184px);
+  aspect-ratio: 1;
+  padding: 21px;
+  border-radius: 24%;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .35);
+}
+.site-intro-mark img { display: block; width: 100%; height: auto; }
+.site-intro-progress {
+  width: 64px;
+  height: 3px;
   overflow: hidden;
   border-radius: 999px;
-  background: #762637;
-  box-shadow: 0 1px 3px rgba(24, 24, 27, .3);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 220ms ease;
+  background: rgba(255, 255, 255, .16);
 }
-.site-loading.is-loading { opacity: 1; }
-.site-loading::before {
+.site-intro-progress::before {
   display: block;
   width: 60%;
   height: 100%;
@@ -120,13 +137,24 @@ footer .cols{grid-template-columns:1.4fr 1fr 1.2fr}
   background: linear-gradient(90deg, var(--red), var(--gold));
   content: "";
 }
+@keyframes intro-expire {
+  to { opacity: 0; visibility: hidden; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-intro { transition: none; animation-duration: 0s; animation-delay: 1200ms; }
+}
+@media (scripting: none), print {
+  .site-intro { display: none; }
+}
 
 @media (prefers-reduced-motion: no-preference) {
-  .site-loading::before {
-    animation: loading-sweep 1250ms cubic-bezier(.4, 0, .25, 1) infinite paused;
+  .site-intro-mark { animation: intro-mark 620ms cubic-bezier(.16, 1, .3, 1) both; }
+  .site-intro-progress::before { animation: intro-sweep 1250ms cubic-bezier(.4, 0, .25, 1) 2; }
+  @keyframes intro-mark {
+    from { opacity: .45; transform: translateY(12px) scale(.94); }
+    to { opacity: 1; transform: none; }
   }
-  .site-loading.is-loading::before { animation-play-state: running; }
-  @keyframes loading-sweep {
+  @keyframes intro-sweep {
     from { transform: translateX(-95%); }
     to { transform: translateX(170%); }
   }

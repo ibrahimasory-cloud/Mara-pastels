@@ -382,25 +382,21 @@ async function showPublishedSite() {
   applySiteContent(published.content, published.revision);
 }
 
-const loadingBar = document.querySelector(".site-loading");
-const loadingStatus = document.querySelector("#site-loading-status");
+const siteIntro = document.querySelector(".site-intro");
 const heroImage = document.querySelector('[data-mara-image="hero"]');
-const showLoading = window.setTimeout(() => {
-  loadingBar.classList.add("is-loading");
-  loadingStatus.textContent = "Chargement de la vitrine…";
-}, 150);
+const introMinimum = new Promise((resolve) => {
+  window.setTimeout(resolve, motionPreference.matches ? 850 : 450);
+});
 
-showPublishedSite()
+const storefrontReady = showPublishedSite()
   .catch(() => {
     orderAvailability.textContent = "Le formulaire est temporairement indisponible. Vous pouvez nous écrire sur WhatsApp.";
     orderAvailability.hidden = false;
   })
-  .then(() => heroImage.decode?.().catch(() => {}))
-  .finally(() => {
-    window.clearTimeout(showLoading);
-    loadingBar.classList.remove("is-loading");
-    loadingStatus.textContent = "";
-  });
+  .then(() => heroImage.decode?.().catch(() => {}));
+
+Promise.all([introMinimum, storefrontReady]).then(() => siteIntro.classList.add("is-leaving"));
+document.addEventListener("focusin", () => { siteIntro.hidden = true; }, { once: true });
 
 function prepareScrollMotion() {
   if (!motionPreference.matches) return;
