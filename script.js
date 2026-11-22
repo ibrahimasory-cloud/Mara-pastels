@@ -168,9 +168,14 @@ orderForm.addEventListener("submit", async (event) => {
     orderWhatsApp.focus();
     window.location.assign(orderWhatsApp.href);
   } catch (error) {
-    showOrderError(error.status === 409
-      ? "Le menu a changé. Rechargez la page pour afficher les nouveaux prix avant de commander."
-      : "La demande n’a pas pu être enregistrée. Réessayez avant d’ouvrir WhatsApp.");
+    if (error.code === "PT410") {
+      attempt = undefined;
+      showOrderError("Cette demande a été annulée. Vous pouvez envoyer une nouvelle demande depuis ce formulaire.");
+    } else {
+      showOrderError(error.status === 409
+        ? "Le menu a changé. Rechargez la page pour afficher les nouveaux prix avant de commander."
+        : "La demande n’a pas pu être enregistrée. Réessayez avant d’ouvrir WhatsApp.");
+    }
   } finally {
     orderFields.disabled = false;
     orderSubmit.disabled = false;

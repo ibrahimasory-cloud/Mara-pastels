@@ -608,7 +608,9 @@
 
 .order-details { margin: 8px 0;padding-left: 20px; }
 
-.order-status-field { max-width: 320px; }
+.order-actions { display:flex;align-items:end;flex-wrap:wrap;gap:12px; }
+.order-status-field { flex:1 1 200px;max-width:320px; }
+.order-cancel { color:var(--red); }
 
 .inbox-list h3 { margin-top: 0; }
 .inbox-list p { white-space: pre-wrap;overflow-wrap: anywhere;margin-block: 10px; }

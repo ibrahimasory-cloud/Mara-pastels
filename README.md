@@ -31,6 +31,8 @@ Exécuter ensuite [202611210002_mara_livraison_sept_jours.sql](supabase/migratio
 
 Dans **Demandes de commande**, tu peux actualiser la liste, changer le statut et exporter toutes les demandes. Le bouton **Exporter en PDF** ouvre la fenêtre d’impression. Choisis **Enregistrer au format PDF** pour télécharger le document.
 
+Pour activer **Annuler et supprimer** dans chaque demande, exécuter [202611220001_mara_cancel_orders.sql](supabase/migrations/202611220001_mara_cancel_orders.sql) dans le SQL Editor Supabase, après les migrations précédentes. La confirmation efface la demande de la base et la retire de la liste, du tableau de bord et des nouveaux PDF. Les anciennes demandes déjà marquées annulées sont également exclues de ces vues.
+
 Dans **Réglages**, tu peux modifier les prix, disponibilités, horaires, zones, moyens de paiement et liens sociaux. Les horaires saisis sont affichés sur la vitrine. Les brouillons sont restaurés sur le même navigateur pour la même révision publiée. **Prévisualiser** ouvre la vitrine dans un nouvel onglet avec le brouillon et le dépôt de commande désactivé. **Sauvegarder le contenu** télécharge le texte et les références des médias. La sauvegarde Supabase et la copie des fichiers photo restent nécessaires pour une restauration complète.
 
 ## Activer la réception des messages WhatsApp

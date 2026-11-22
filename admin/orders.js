@@ -8,11 +8,21 @@ const moreOrders = document.querySelector("#more-orders");
 const exportOrders = document.querySelector("#export-orders");
 const orderStatuses = {
   pending: "En attente de confirmation",
-  confirmed: "Confirmée",
-  cancelled: "Annulée"
+  confirmed: "Confirmée"
 };
 const orderColumns = "id,created_at,first_name,last_name,address,delivery_day,items,subtotal_gnf,sauce_pending,status";
 let orderCursor;
+let loadingOrders = false;
+let cancellingOrder = false;
+let exportingOrders = false;
+
+function updateOrderControls() {
+  refreshOrders.disabled = moreOrders.disabled = loadingOrders || cancellingOrder;
+  exportOrders.disabled = cancellingOrder || exportingOrders || (!ordersList.childElementCount && moreOrders.hidden);
+  for (const cancel of ordersList.querySelectorAll(".order-cancel")) {
+    cancel.disabled = loadingOrders || cancellingOrder || exportingOrders || cancel.parentElement.querySelector("select").disabled;
+  }
+}
 
 function orderLines(order) {
   const list = node("ul", "", "order-details");
@@ -58,6 +68,8 @@ function orderCard(order, printable = false) {
 
   const label = node("label", "Statut", "fld order-status-field");
   const select = node("select");
+  const cancel = node("button", "Annuler et supprimer", "btn admin-secondary order-cancel");
+  cancel.type = "button";
   for (const [value, title] of Object.entries(orderStatuses)) {
     const option = node("option", title);
     option.value = value;
@@ -67,6 +79,7 @@ function orderCard(order, printable = false) {
   select.addEventListener("change", async () => {
     const current = session;
     select.disabled = true;
+    updateOrderControls();
     try {
       const [saved] = await adminRequest(`${maraOrderPath}?id=eq.${order.id}&select=status`, {
         method: "PATCH",
@@ -83,10 +96,42 @@ function orderCard(order, printable = false) {
       if (session === current && !sessionError(error)) status(ordersStatus, "Le statut n’a pas pu être enregistré.", true);
     } finally {
       select.disabled = false;
+      if (session === current) updateOrderControls();
+    }
+  });
+  cancel.addEventListener("click", async () => {
+    const current = session;
+    if (!current || cancel.disabled || !window.confirm(`Annuler et supprimer définitivement la demande ${reference} ?`)) return;
+    cancellingOrder = true;
+    select.disabled = true;
+    updateOrderControls();
+    status(ordersStatus, "Suppression de la demande…");
+    try {
+      await adminRequest("/rest/v1/rpc/mara_cancel_order", { method: "POST", body: { p_order_id: order.id } });
+      if (session !== current) return;
+      card.remove();
+      resetOrdersPrint();
+      invalidateDashboard();
+      status(ordersStatus, `Demande ${reference} supprimée.`);
+    } catch (error) {
+      if (session === current && !sessionError(error)) {
+        status(ordersStatus, error.code === "PGRST202"
+          ? "La suppression doit être activée dans Supabase."
+          : "La suppression n’a pas pu être confirmée. Réessayez ou actualisez la liste.", true);
+      }
+    } finally {
+      if (session === current) {
+        cancellingOrder = false;
+        select.disabled = false;
+        updateOrderControls();
+        if (!card.isConnected) refreshOrders.focus();
+      }
     }
   });
   label.append(select);
-  expanded.append(label);
+  const actions = node("div", "", "order-actions");
+  actions.append(label, cancel);
+  expanded.append(actions);
   row.append(summary, expanded);
   card.append(row);
   return card;
@@ -95,12 +140,14 @@ function orderCard(order, printable = false) {
 function getOrderPage(limit, before, { columns = orderColumns, start } = {}) {
   const cursor = before === undefined ? "" : `&id=lt.${encodeURIComponent(before)}`;
   const period = start ? `&created_at=gte.${encodeURIComponent(start.toISOString())}` : "";
-  return adminRequest(`${maraOrderPath}?select=${columns}&order=id.desc&limit=${limit}${cursor}${period}`);
+  return adminRequest(`${maraOrderPath}?select=${columns}&status=neq.cancelled&order=id.desc&limit=${limit}${cursor}${period}`);
 }
 
 async function loadOrders(previous = false) {
   const current = session;
-  refreshOrders.disabled = moreOrders.disabled = true;
+  if (!current || loadingOrders || cancellingOrder) return;
+  loadingOrders = true;
+  updateOrderControls();
   status(ordersStatus, "Chargement des demandes…");
   try {
     const page = await getOrderPage(31, previous ? orderCursor : undefined);
@@ -110,7 +157,6 @@ async function loadOrders(previous = false) {
     ordersList.append(...visible.map((order) => orderCard(order)));
     orderCursor = visible.at(-1)?.id;
     moreOrders.hidden = page.length <= 30;
-    exportOrders.disabled = ordersList.childElementCount === 0;
     status(ordersStatus, ordersList.childElementCount ? "" : "Aucune demande pour le moment.");
   } catch (error) {
     if (session === current && !sessionError(error)) {
@@ -119,7 +165,10 @@ async function loadOrders(previous = false) {
         : "Chargement des demandes impossible.", true);
     }
   } finally {
-    refreshOrders.disabled = moreOrders.disabled = false;
+    if (session === current) {
+      loadingOrders = false;
+      updateOrderControls();
+    }
   }
 }
 
@@ -132,8 +181,9 @@ function resetOrdersPrint() {
 function clearOrders() {
   ordersList.replaceChildren();
   orderCursor = undefined;
-  exportOrders.disabled = true;
+  loadingOrders = cancellingOrder = exportingOrders = false;
   moreOrders.hidden = true;
+  updateOrderControls();
   status(ordersStatus, "");
   resetOrdersPrint();
 }
@@ -147,7 +197,9 @@ window.addEventListener("afterprint", resetOrdersPrint);
 
 exportOrders.addEventListener("click", async () => {
   const current = session;
-  exportOrders.disabled = true;
+  if (!current || exportOrders.disabled) return;
+  exportingOrders = true;
+  updateOrderControls();
   status(ordersStatus, "Préparation du PDF…");
   try {
     const records = [];
@@ -173,6 +225,9 @@ exportOrders.addEventListener("click", async () => {
     resetOrdersPrint();
     if (session === current && !sessionError(error)) status(ordersStatus, "L’export des demandes a échoué.", true);
   } finally {
-    if (session === current) exportOrders.disabled = ordersList.childElementCount === 0;
+    if (session === current) {
+      exportingOrders = false;
+      updateOrderControls();
+    }
   }
 });

@@ -29,7 +29,6 @@ function activeProductTotals(records) {
   const totals = { mini: { orders: 0, pieces: 0 }, king: { orders: 0, pieces: 0 } };
   let active = 0;
   for (const order of records) {
-    if (order.status === "cancelled") continue;
     active++;
     const { chicken = 0, meat = 0, tuna = 0, king = 0 } = order.quantities ?? {};
     const mini = Number(chicken) + Number(meat) + Number(tuna);
@@ -137,11 +136,9 @@ function renderActivity(records, period, today) {
 function renderMetrics(records, period, today) {
   let pending = 0;
   let confirmed = 0;
-  let cancelled = 0;
   let subtotal = 0n;
   for (const order of records) {
     if (order.status === "pending") pending++;
-    if (order.status === "cancelled") cancelled++;
     if (order.status === "confirmed") {
       confirmed++;
       subtotal += BigInt(order.subtotal_gnf);
@@ -151,7 +148,6 @@ function renderMetrics(records, period, today) {
   document.querySelector("#metric-pending").textContent = countFormat.format(pending);
   document.querySelector("#metric-confirmed").textContent = countFormat.format(confirmed);
   document.querySelector("#metric-amount").textContent = formatPrice(subtotal);
-  document.querySelector("#dashboard-cancelled").textContent = countLabel(cancelled, "demande annulée", "demandes annulées");
   renderActivity(records, period, today);
   renderProductComparison(records);
 }
