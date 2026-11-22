@@ -395,8 +395,19 @@ const storefrontReady = showPublishedSite()
   })
   .then(() => heroImage.decode?.().catch(() => {}));
 
-Promise.all([introMinimum, storefrontReady]).then(() => siteIntro.classList.add("is-leaving"));
-document.addEventListener("focusin", () => { siteIntro.hidden = true; }, { once: true });
+function closeSiteIntro() {
+  window.clearTimeout(introDeadline);
+  if (!siteIntro.hidden && getComputedStyle(siteIntro).visibility === "visible") {
+    siteIntro.classList.add("is-leaving");
+  }
+}
+
+const introDeadline = window.setTimeout(closeSiteIntro, motionPreference.matches ? 1850 : 950);
+Promise.all([introMinimum, storefrontReady]).then(closeSiteIntro);
+document.addEventListener("focusin", () => {
+  window.clearTimeout(introDeadline);
+  siteIntro.hidden = true;
+}, { once: true });
 
 function prepareScrollMotion() {
   if (!motionPreference.matches) return;

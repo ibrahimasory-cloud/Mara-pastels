@@ -96,6 +96,7 @@ footer .cols{grid-template-columns:1.4fr 1fr 1.2fr}
 .shot { position: relative; overflow: hidden; }
 .shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
+.storefront { --intro-exit-duration: 460ms; }
 .site-intro {
   position: fixed;
   inset: 0;
@@ -107,7 +108,7 @@ footer .cols{grid-template-columns:1.4fr 1fr 1.2fr}
   background: radial-gradient(ellipse at 50% 44%, #401721, #1d1116 48%, #101012 82%);
   pointer-events: none;
   clip-path: inset(0);
-  transition: clip-path 460ms cubic-bezier(.65, 0, .3, 1);
+  transition: clip-path var(--intro-exit-duration) cubic-bezier(.65, 0, .3, 1);
   animation: intro-expire 400ms ease 2100ms forwards;
 }
 .site-intro.is-leaving { clip-path: inset(0 0 100%); }
@@ -162,6 +163,31 @@ footer .cols{grid-template-columns:1.4fr 1fr 1.2fr}
   html:not(:has(.storefront)),
   html:has(.storefront.motion-scrolling) { scroll-behavior: smooth; }
   .storefront { --motion-out: cubic-bezier(.16, 1, .3, 1); }
+
+  .storefront:not(.motion-scrolling) :where(.site-intro.is-leaving:not([hidden])) ~ .hero .bg {
+    animation: hero-photo-arrive 1350ms var(--motion-out) 120ms backwards;
+  }
+  :where(.site-intro.is-leaving:not([hidden])) ~ .hero h1 {
+    animation: hero-title-arrive 900ms var(--motion-out) var(--intro-exit-duration) backwards;
+  }
+  :where(.site-intro.is-leaving:not([hidden])) ~ .hero .hero-body :is(.lead, .actions, .facts > li) {
+    animation: hero-detail-arrive 780ms var(--motion-out) calc(var(--intro-exit-duration) + var(--hero-stagger)) backwards;
+  }
+  .hero-body .lead { --hero-stagger: 150ms; }
+  .hero-body .actions { --hero-stagger: 260ms; }
+  .hero-body .facts > li { --hero-stagger: 390ms; }
+  .hero-body .facts > li:nth-child(2) { --hero-stagger: 470ms; }
+  .hero-body .facts > li:nth-child(3) { --hero-stagger: 550ms; }
+  @keyframes hero-photo-arrive {
+    from { opacity: .17; transform: scale(1.12) translateY(14px); }
+  }
+  @keyframes hero-title-arrive {
+    from { opacity: 0; clip-path: inset(0 -12px 100%); transform: translateY(30px); }
+    to { clip-path: inset(-12px); }
+  }
+  @keyframes hero-detail-arrive {
+    from { opacity: 0; transform: translateY(24px); }
+  }
 
   .motion-scrolling .motion-pending { opacity: 0; }
   .motion-scrolling main .motion-enter {
